@@ -1,0 +1,6 @@
+@lyzico3DPaymentAPI_HostAddress = http://localhost:5274
+
+GET {{lyzico3DPaymentAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

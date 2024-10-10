@@ -1,0 +1,46 @@
+﻿@model Iyzico3DPaymentProject.Models.PaymentViewModel
+@{
+    ViewData["Title"] = "Ödeme Sayfası";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Ödeme Bilgileri</h2>
+
+<div class="odeme-formu">
+    @using (Html.BeginForm("ProcessPayment", "PaymentView", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.CardHolderName, "Kart Sahibinin Adı:")
+            @Html.TextBoxFor(m => m.CardHolderName, new { @class = "form-control", required = "required" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.CardNumber, "Kart Numarası:")
+            @Html.TextBoxFor(m => m.CardNumber, new { @class = "form-control", required = "required" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.ExpireMonth, "Son Kullanma Ayı:")
+            @Html.TextBoxFor(m => m.ExpireMonth, new { @class = "form-control", placeholder = "AA", required = "required" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.ExpireYear, "Son Kullanma Yılı:")
+            @Html.TextBoxFor(m => m.ExpireYear, new { @class = "form-control", placeholder = "YY", required = "required" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Cvc, "Güvenlik Kodu:")
+            @Html.TextBoxFor(m => m.Cvc, new { @class = "form-control", required = "required" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Price, "Ödeme Tutarı:")
+            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", required = "required" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Ödemeyi Tamamla</button>
+    }
+</div>
