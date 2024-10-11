@@ -4,6 +4,8 @@ using Iyzipay.Model;
 using Iyzipay.Request;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System;
+using System.Globalization;
 
 namespace Iyzico3DPaymentAPI.Controllers
 {
@@ -16,7 +18,6 @@ namespace Iyzico3DPaymentAPI.Controllers
 
         public PaymentController(IConfiguration configuration)
         {
-           
             _configuration = configuration;
             _callbackUrl = _configuration["PaymentSettings:CallbackUrl"];
 
@@ -35,15 +36,13 @@ namespace Iyzico3DPaymentAPI.Controllers
                 SecretKey = _configuration["IyzicoSettings:SecretKey"],
                 BaseUrl = _configuration["IyzicoSettings:BaseUrl"]
             };
-            Console.WriteLine($"Options - ApiKey: {options.ApiKey}");
-            Console.WriteLine($"Options - SecretKey: {options.SecretKey}");
-            Console.WriteLine($"Options - BaseUrl: {options.BaseUrl}");
+
             var request = new CreatePaymentRequest
             {
                 Locale = Locale.TR.ToString(),
                 ConversationId = Guid.NewGuid().ToString(),
-                Price = model.Price,
-                PaidPrice = model.PaidPrice,
+                Price = model.Price.ToString(CultureInfo.InvariantCulture),
+                PaidPrice = model.PaidPrice.ToString(CultureInfo.InvariantCulture),
                 Currency = Currency.TRY.ToString(),
                 Installment = 1,
                 BasketId = "B" + DateTime.Now.Ticks,
@@ -61,11 +60,60 @@ namespace Iyzico3DPaymentAPI.Controllers
                 Cvc = model.Cvc,
                 RegisterCard = 0
             };
+
+            var buyer = new Buyer
+            {
+                Id = model.Buyer.Id,
+                Name = model.Buyer.Name,
+                Surname = model.Buyer.Surname,
+                IdentityNumber = model.Buyer.IdentityNumber,
+                Email = model.Buyer.Email,
+                GsmNumber = model.Buyer.GsmNumber,
+                RegistrationDate = model.Buyer.RegistrationDate,
+                LastLoginDate = model.Buyer.LastLoginDate,
+                RegistrationAddress = model.Buyer.RegistrationAddress,
+                City = model.Buyer.City,
+                Country = model.Buyer.Country,
+                ZipCode = model.Buyer.ZipCode,
+                Ip = model.Buyer.Ip ?? HttpContext.Connection.RemoteIpAddress?.ToString()
+            };
+
+            request.Buyer = buyer;
             request.PaymentCard = paymentCard;
 
-            // Buyer, Address ve BasketItems bilgilerini de ekleyin
+            // Adres bilgilerini ekleyin
+            request.ShippingAddress = new Address
+            {
+                ContactName = $"{buyer.Name} {buyer.Surname}",
+                City = buyer.City,
+                Country = buyer.Country,
+                Description = buyer.RegistrationAddress,
+                ZipCode = buyer.ZipCode
+            };
 
-            var threedsInitialize = ThreedsInitialize.Create(request, options); // Options Kısmında null
+            request.BillingAddress = new Address
+            {
+                ContactName = $"{buyer.Name} {buyer.Surname}",
+                City = buyer.City,
+                Country = buyer.Country,
+                Description = buyer.RegistrationAddress,
+                ZipCode = buyer.ZipCode
+            };
+
+            // Sepet öğelerini ekleyin (örnek olarak)
+            request.BasketItems = new List<BasketItem>
+            {
+                new BasketItem
+                {
+                    Id = "BI" + DateTime.Now.Ticks,
+                    Name = "Örnek Ürün",
+                    Category1 = "Kategori",
+                    ItemType = BasketItemType.PHYSICAL.ToString(),
+                    Price = model.Price.ToString(CultureInfo.InvariantCulture)
+                }
+            };
+
+            var threedsInitialize = ThreedsInitialize.Create(request, options);
 
             if (threedsInitialize.Status == "success")
             {
@@ -77,7 +125,7 @@ namespace Iyzico3DPaymentAPI.Controllers
             }
         }
 
-
+        [HttpGet("callback")]
         [HttpPost("callback")]
         public IActionResult Callback([FromForm] IFormCollection form)
         {
@@ -94,9 +142,9 @@ namespace Iyzico3DPaymentAPI.Controllers
 
             Options options = new Options
             {
-                ApiKey = "sandbox-xFgd2zfpxGx07FE4oEuvWj8aRLb97RIO",
-                SecretKey = "sandbox-qgMiTKPIMS6bFpZwLjTPipDQw58q7IfV",
-                BaseUrl = "https://sandbox-api.iyzipay.com"
+                ApiKey = _configuration["IyzicoSettings:ApiKey"],
+                SecretKey = _configuration["IyzicoSettings:SecretKey"],
+                BaseUrl = _configuration["IyzicoSettings:BaseUrl"]
             };
 
             ThreedsPayment threedsPayment = ThreedsPayment.Create(request, options);
@@ -104,7 +152,7 @@ namespace Iyzico3DPaymentAPI.Controllers
             if (threedsPayment.Status == "success")
             {
                 // Ödeme başarılı, veritabanınızı güncelleyin ve kullanıcıyı bilgilendirin
-                return Ok(new { Message = "Ödeme başarılı", PaymentId = threedsPayment.PaymentId });
+                return RedirectToAction("SuccessfulPayment", "Pages");
             }
             else
             {
@@ -113,6 +161,4 @@ namespace Iyzico3DPaymentAPI.Controllers
             }
         }
     }
-
-
 }
