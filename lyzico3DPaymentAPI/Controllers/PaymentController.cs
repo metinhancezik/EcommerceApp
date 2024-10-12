@@ -1,11 +1,8 @@
 ﻿using Iyzico3DPayment.Shared.Models;
-using Iyzipay;
-using Iyzipay.Model;
-using Iyzipay.Request;
+using Iyzico3DPaymentAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
-using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Iyzico3DPaymentAPI.Controllers
 {
@@ -13,151 +10,59 @@ namespace Iyzico3DPaymentAPI.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _callbackUrl;
+        private readonly IPaymentService _paymentService;
+        private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(IConfiguration configuration)
+        public PaymentController(IPaymentService paymentService, ILogger<PaymentController> logger)
         {
-            _configuration = configuration;
-            _callbackUrl = _configuration["PaymentSettings:CallbackUrl"];
-
-            Console.WriteLine($"ApiKey: {_configuration["IyzicoSettings:ApiKey"]}");
-            Console.WriteLine($"SecretKey: {_configuration["IyzicoSettings:SecretKey"]}");
-            Console.WriteLine($"BaseUrl: {_configuration["IyzicoSettings:BaseUrl"]}");
-            Console.WriteLine($"CallbackUrl: {_callbackUrl}");
+            _paymentService = paymentService;
+            _logger = logger;
         }
 
         [HttpPost("initiate")]
-        public IActionResult InitiatePayment([FromBody] PaymentRequestModel model)
+        public async Task<IActionResult> InitiatePayment([FromBody] PaymentRequestModel model)
         {
-            var options = new Options
+            try
             {
-                ApiKey = _configuration["IyzicoSettings:ApiKey"],
-                SecretKey = _configuration["IyzicoSettings:SecretKey"],
-                BaseUrl = _configuration["IyzicoSettings:BaseUrl"]
-            };
-
-            var request = new CreatePaymentRequest
-            {
-                Locale = Locale.TR.ToString(),
-                ConversationId = Guid.NewGuid().ToString(),
-                Price = model.Price.ToString(CultureInfo.InvariantCulture),
-                PaidPrice = model.PaidPrice.ToString(CultureInfo.InvariantCulture),
-                Currency = Currency.TRY.ToString(),
-                Installment = 1,
-                BasketId = "B" + DateTime.Now.Ticks,
-                PaymentChannel = PaymentChannel.WEB.ToString(),
-                PaymentGroup = PaymentGroup.PRODUCT.ToString(),
-                CallbackUrl = _callbackUrl
-            };
-
-            var paymentCard = new PaymentCard
-            {
-                CardHolderName = model.CardHolderName,
-                CardNumber = model.CardNumber,
-                ExpireMonth = model.ExpireMonth,
-                ExpireYear = model.ExpireYear,
-                Cvc = model.Cvc,
-                RegisterCard = 0
-            };
-
-            var buyer = new Buyer
-            {
-                Id = model.Buyer.Id,
-                Name = model.Buyer.Name,
-                Surname = model.Buyer.Surname,
-                IdentityNumber = model.Buyer.IdentityNumber,
-                Email = model.Buyer.Email,
-                GsmNumber = model.Buyer.GsmNumber,
-                RegistrationDate = model.Buyer.RegistrationDate,
-                LastLoginDate = model.Buyer.LastLoginDate,
-                RegistrationAddress = model.Buyer.RegistrationAddress,
-                City = model.Buyer.City,
-                Country = model.Buyer.Country,
-                ZipCode = model.Buyer.ZipCode,
-                Ip = model.Buyer.Ip ?? HttpContext.Connection.RemoteIpAddress?.ToString()
-            };
-
-            request.Buyer = buyer;
-            request.PaymentCard = paymentCard;
-
-            // Adres bilgilerini ekleyin
-            request.ShippingAddress = new Address
-            {
-                ContactName = $"{buyer.Name} {buyer.Surname}",
-                City = buyer.City,
-                Country = buyer.Country,
-                Description = buyer.RegistrationAddress,
-                ZipCode = buyer.ZipCode
-            };
-
-            request.BillingAddress = new Address
-            {
-                ContactName = $"{buyer.Name} {buyer.Surname}",
-                City = buyer.City,
-                Country = buyer.Country,
-                Description = buyer.RegistrationAddress,
-                ZipCode = buyer.ZipCode
-            };
-
-            // Sepet öğelerini ekleyin (örnek olarak)
-            request.BasketItems = new List<BasketItem>
-            {
-                new BasketItem
+                model.Buyer.Ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var result = await _paymentService.InitiatePayment(model);
+                if (result.Status == "success")
                 {
-                    Id = "BI" + DateTime.Now.Ticks,
-                    Name = "Örnek Ürün",
-                    Category1 = "Kategori",
-                    ItemType = BasketItemType.PHYSICAL.ToString(),
-                    Price = model.Price.ToString(CultureInfo.InvariantCulture)
+                    return Ok(new { HtmlContent = result.HtmlContent });
                 }
-            };
-
-            var threedsInitialize = ThreedsInitialize.Create(request, options);
-
-            if (threedsInitialize.Status == "success")
-            {
-                return Ok(new { HtmlContent = threedsInitialize.HtmlContent });
+                return BadRequest(new { ErrorMessage = result.ErrorMessage });
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest(new { ErrorMessage = threedsInitialize.ErrorMessage });
+                _logger.LogError(ex, "Error occurred while initiating payment");
+                return StatusCode(500, new { ErrorMessage = "An internal error occurred" });
             }
         }
 
         [HttpGet("callback")]
         [HttpPost("callback")]
-        public IActionResult Callback([FromForm] IFormCollection form)
+        public async Task<IActionResult> Callback([FromForm] IFormCollection form)
         {
-            string conversationId = form["conversationId"];
-            string paymentId = form["paymentId"];
-            string conversationData = form["conversationData"];
-
-            CreateThreedsPaymentRequest request = new CreateThreedsPaymentRequest
+            try
             {
-                ConversationId = conversationId,
-                PaymentId = paymentId,
-                ConversationData = conversationData
-            };
+                var callbackData = form.ToDictionary(x => x.Key, x => x.Value.ToString());
+                var result = await _paymentService.ProcessCallback(callbackData);
 
-            Options options = new Options
-            {
-                ApiKey = _configuration["IyzicoSettings:ApiKey"],
-                SecretKey = _configuration["IyzicoSettings:SecretKey"],
-                BaseUrl = _configuration["IyzicoSettings:BaseUrl"]
-            };
-
-            ThreedsPayment threedsPayment = ThreedsPayment.Create(request, options);
-
-            if (threedsPayment.Status == "success")
-            {
-                // Ödeme başarılı, veritabanınızı güncelleyin ve kullanıcıyı bilgilendirin
-                return RedirectToAction("SuccessfulPayment", "Pages");
+                if (result.Status == "success")
+                {
+                    // Ödeme başarılı, veritabanınızı güncelleyin ve kullanıcıyı bilgilendirin
+                    return Ok(new { Message = "Ödeme başarılı", PaymentId = result.PaymentId });
+                }
+                else
+                {
+                    // Ödeme başarısız, kullanıcıyı bilgilendirin
+                    return BadRequest(new { ErrorMessage = result.ErrorMessage });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Ödeme başarısız, kullanıcıyı bilgilendirin
-                return BadRequest(new { ErrorMessage = threedsPayment.ErrorMessage });
+                _logger.LogError(ex, "Error occurred while processing payment callback");
+                return StatusCode(500, new { ErrorMessage = "An internal error occurred" });
             }
         }
     }

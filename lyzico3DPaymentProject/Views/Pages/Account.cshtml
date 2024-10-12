@@ -4,58 +4,68 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Hesap Bilgileri</h2>
+<div class="account-container mx-auto" style="max-width: 500px;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-4">
+                <h1 class="modal-title fs-5">Hesap Bilgileri</h1>
+            </div>
+            @using (Html.BeginForm("SaveAccount", "Pages", FormMethod.Post, new { id = "accountForm" }))
+            {
+                <div class="modal-body py-0">
+                    <div class="hesap-formu p-4">
+                        @Html.AntiForgeryToken()
 
-<div class="hesap-formu">
-    @using (Html.BeginForm("SaveAccount", "Pages", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Name, "Ad:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", required = "required" })
+                        </div>
 
-        <div class="form-group">
-            @Html.LabelFor(m => m.Name, "Ad:")
-            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", required = "required" })
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Surname, "Soyad:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.Surname, new { @class = "form-control", required = "required" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.GsmNumber, "Telefon Numarası:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.GsmNumber, new { @class = "form-control", required = "required", pattern = "^[0-9]{10}$" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Email, "E-posta:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", required = "required", type = "email", pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.IdentityNumber, "Kimlik Numarası:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.IdentityNumber, new { @class = "form-control", required = "required" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.RegistrationAddress, "Adres:", new { @class = "form-label" })
+                            @Html.TextAreaFor(m => m.RegistrationAddress, new { @class = "form-control", required = "required", rows = "3" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.City, "Şehir:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.City, new { @class = "form-control", required = "required" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Country, "Ülke:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.Country, new { @class = "form-control", required = "required" })
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.ZipCode, "Posta Kodu:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.ZipCode, new { @class = "form-control", required = "required" })
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer flex-column p-4">
+                    <button type="submit" form="accountForm" class="btn btn-lg btn-primary">Kaydet</button>
+                </div>
+            }
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.Surname, "Soyad:")
-            @Html.TextBoxFor(m => m.Surname, new { @class = "form-control", required = "required" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.GsmNumber, "Telefon Numarası:")
-            @Html.TextBoxFor(m => m.GsmNumber, new { @class = "form-control", required = "required" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.Email, "E-posta:")
-            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", required = "required", type = "email" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.IdentityNumber, "Kimlik Numarası:")
-            @Html.TextBoxFor(m => m.IdentityNumber, new { @class = "form-control", required = "required" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.RegistrationAddress, "Adres:")
-            @Html.TextAreaFor(m => m.RegistrationAddress, new { @class = "form-control", required = "required", rows = "3" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.City, "Şehir:")
-            @Html.TextBoxFor(m => m.City, new { @class = "form-control", required = "required" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.Country, "Ülke:")
-            @Html.TextBoxFor(m => m.Country, new { @class = "form-control", required = "required" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.ZipCode, "Posta Kodu:")
-            @Html.TextBoxFor(m => m.ZipCode, new { @class = "form-control", required = "required" })
-        </div>
-
-        <button type="submit" class="btn btn-primary">Kaydet</button>
-    }
+    </div>
 </div>

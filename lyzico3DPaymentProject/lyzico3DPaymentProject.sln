@@ -8,12 +8,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "lyzico3DPaymentProject", "l
 		{3FD93852-88B2-4186-889A-99C96E08D9DF} = {3FD93852-88B2-4186-889A-99C96E08D9DF}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lyzico3DPaymentAPI", "..\lyzico3DPaymentAPI\lyzico3DPaymentAPI.csproj", "{ACB63446-02E9-4EBF-9291-4D44A4C64E97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "lyzico3DPaymentAPI", "..\lyzico3DPaymentAPI\lyzico3DPaymentAPI.csproj", "{ACB63446-02E9-4EBF-9291-4D44A4C64E97}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3FD93852-88B2-4186-889A-99C96E08D9DF} = {3FD93852-88B2-4186-889A-99C96E08D9DF}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iyzico3DPaymentShared", "..\Iyzico3DPaymentShared\Iyzico3DPaymentShared.csproj", "{3FD93852-88B2-4186-889A-99C96E08D9DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Iyzico3DPaymentShared", "..\Iyzico3DPaymentShared\Iyzico3DPaymentShared.csproj", "{3FD93852-88B2-4186-889A-99C96E08D9DF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityLayer", "..\EntityLayer\EntityLayer.csproj", "{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{3FD93852-88B2-4186-889A-99C96E08D9DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FD93852-88B2-4186-889A-99C96E08D9DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FD93852-88B2-4186-889A-99C96E08D9DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

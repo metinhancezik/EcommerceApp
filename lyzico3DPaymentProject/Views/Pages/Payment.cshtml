@@ -4,43 +4,58 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Ödeme Bilgileri</h2>
 
-<div class="odeme-formu">
-    @using (Html.BeginForm("ProcessPayment", "PaymentView", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.CardHolderName, "Kart Sahibinin Adı:")
-            @Html.TextBoxFor(m => m.CardHolderName, new { @class = "form-control", required = "required" })
+<div class="payment-container mx-auto" style="max-width: 500px;">
+<div class="modal-dialog" role="document">
+    <div class="modal-content rounded-4 shadow">
+        <div class="modal-header p-4">
+            <h1 class="modal-title fs-5">Ödeme Modülü</h1>
         </div>
+        @using (Html.BeginForm("ProcessPayment", "PaymentView", FormMethod.Post, new { id = "paymentForm" }))
+        {
+        <div class="modal-body py-0" p-4>
+            <div class="odeme-formu p-4">
+             
+                    @Html.AntiForgeryToken()
 
-        <div class="form-group">
-            @Html.LabelFor(m => m.CardNumber, "Kart Numarası:")
-            @Html.TextBoxFor(m => m.CardNumber, new { @class = "form-control", required = "required" })
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.CardHolderName, "Kart Sahibinin Adı:", new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.CardHolderName, new { @class = "form-control", required = "required" })
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.CardNumber, "Kart Numarası:", new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.CardNumber, new { @class = "form-control", required = "required", data_mask = "0000 0000 0000 0000" })
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            @Html.LabelFor(m => m.ExpireMonth, "Son Kullanma Ayı:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.ExpireMonth, new { @class = "form-control", placeholder = "AA", required = "required" })
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            @Html.LabelFor(m => m.ExpireYear, "Son Kullanma Yılı:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.ExpireYear, new { @class = "form-control", placeholder = "YY", required = "required" })
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            @Html.LabelFor(m => m.Cvc, "Güvenlik Kodu:", new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.Cvc, new { @class = "form-control", required = "required", maxlength = "4" })
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.Price, "Ödeme Tutarı:", new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.Price, new { @class = "form-control", required = "required", type = "number", step = "0.01", min = "0" })
+                    </div>
+                
+            </div>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.ExpireMonth, "Son Kullanma Ayı:")
-            @Html.TextBoxFor(m => m.ExpireMonth, new { @class = "form-control", placeholder = "AA", required = "required" })
+        <div class="modal-footer flex-column  p-4">
+            <button type="submit" form="paymentForm" class="btn btn-lg btn-primary">Ödemeyi Tamamla</button>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.ExpireYear, "Son Kullanma Yılı:")
-            @Html.TextBoxFor(m => m.ExpireYear, new { @class = "form-control", placeholder = "YY", required = "required" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.Cvc, "Güvenlik Kodu:")
-            @Html.TextBoxFor(m => m.Cvc, new { @class = "form-control", required = "required" })
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.Price, "Ödeme Tutarı:")
-            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", required = "required" })
-        </div>
-
-        <button type="submit" class="btn btn-primary">Ödemeyi Tamamla</button>
-    }
+                }
+    </div>
+</div>
 </div>
