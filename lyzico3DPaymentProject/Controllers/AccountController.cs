@@ -47,16 +47,17 @@ namespace ECommerceView.Controllers
                 {
                     await SaveAdditionalUserInfo(user.Id, model);
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Home", "Pages");
                 }
 
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
+                
             }
 
-            return View(model);
+            return RedirectToAction("Register", "Pages", model);
         }
 
         private async Task SaveAdditionalUserInfo(string userId, RegisterViewModel model)
@@ -75,9 +76,9 @@ namespace ECommerceView.Controllers
                 ZipCode = model.ZipCode,
                 CreatedAt = DateTime.Now
             };
-           // _userDetailService.
-            //_context.UserDetails.Add(userDetails);
-            //await _context.SaveChangesAsync();
+            _userDetailService.TAdd(userDetails);
+        
+            await _context.SaveChangesAsync();
         }
 
         [HttpGet]
@@ -108,14 +109,15 @@ namespace ECommerceView.Controllers
                 }
             
 
-            return View(model);
+            return RedirectToAction("Login", "Pages", model);
         }
 
+        [HttpGet]
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Home", "Pages");
         }
     }
 }

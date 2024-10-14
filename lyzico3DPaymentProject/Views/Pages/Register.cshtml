@@ -1,4 +1,5 @@
-﻿@model ECommerceView.Models.RegisterViewModel
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@model ECommerceView.Models.RegisterViewModel
 @{
     ViewData["Title"] = "Kayıt Ol";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -15,6 +16,8 @@
                 <div class="modal-body py-0">
                     <div class="kayit-formu p-4">
                         @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="All" class="text-danger"></div>
 
                         <div class="mb-3">
                             @Html.LabelFor(m => m.Name, new { @class = "form-label" })

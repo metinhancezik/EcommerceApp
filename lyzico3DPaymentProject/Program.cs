@@ -5,8 +5,12 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using DataAccesLayer.Concrete;
 using IdentityServerLayer.Concrete;
+using ServiceLayer.Container;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ContainerDependencies();
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
