@@ -1,5 +1,5 @@
 ﻿
-    namespace Iyzico3DPaymentProject.Models
+namespace ECommerceView.Models
     {
         public class PaymentViewModel
         {

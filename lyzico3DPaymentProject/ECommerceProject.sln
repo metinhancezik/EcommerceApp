@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "lyzico3DPaymentProject", "lyzico3DPaymentProject.csproj", "{93C1A231-A671-4F83-9FEA-469FDD5BA3F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECommerceView", "ECommerceView.csproj", "{93C1A231-A671-4F83-9FEA-469FDD5BA3F7}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3FD93852-88B2-4186-889A-99C96E08D9DF} = {3FD93852-88B2-4186-889A-99C96E08D9DF}
+		{85B5BAFB-64F3-466E-BE3C-7F2FDE40C3B6} = {85B5BAFB-64F3-466E-BE3C-7F2FDE40C3B6}
+		{C8A9C283-8F66-426C-AE46-AD33351D21BA} = {C8A9C283-8F66-426C-AE46-AD33351D21BA}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "lyzico3DPaymentAPI", "..\lyzico3DPaymentAPI\lyzico3DPaymentAPI.csproj", "{ACB63446-02E9-4EBF-9291-4D44A4C64E97}"
@@ -16,6 +18,17 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Iyzico3DPaymentShared", "..\Iyzico3DPaymentShared\Iyzico3DPaymentShared.csproj", "{3FD93852-88B2-4186-889A-99C96E08D9DF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityLayer", "..\EntityLayer\EntityLayer.csproj", "{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccesLayer", "..\DataAccesLayer\DataAccesLayer.csproj", "{85B5BAFB-64F3-466E-BE3C-7F2FDE40C3B6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B} = {16C4BB18-6D23-4439-B0AA-5DD30AEE060B}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MessageQueue", "..\MessageQueue\MessageQueue.csproj", "{B71DAEDC-01F1-404D-B2B8-B938EB9C6E6D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServerLayer", "..\IdentityServer\IdentityServerLayer.csproj", "{C8A9C283-8F66-426C-AE46-AD33351D21BA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceLayer", "..\ServiceLayer\ServiceLayer.csproj", "{861AAD55-3B36-46DD-A641-6884E2AEE77A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +52,22 @@ Global
 		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16C4BB18-6D23-4439-B0AA-5DD30AEE060B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85B5BAFB-64F3-466E-BE3C-7F2FDE40C3B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85B5BAFB-64F3-466E-BE3C-7F2FDE40C3B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85B5BAFB-64F3-466E-BE3C-7F2FDE40C3B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85B5BAFB-64F3-466E-BE3C-7F2FDE40C3B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B71DAEDC-01F1-404D-B2B8-B938EB9C6E6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B71DAEDC-01F1-404D-B2B8-B938EB9C6E6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B71DAEDC-01F1-404D-B2B8-B938EB9C6E6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B71DAEDC-01F1-404D-B2B8-B938EB9C6E6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8A9C283-8F66-426C-AE46-AD33351D21BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8A9C283-8F66-426C-AE46-AD33351D21BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8A9C283-8F66-426C-AE46-AD33351D21BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8A9C283-8F66-426C-AE46-AD33351D21BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{861AAD55-3B36-46DD-A641-6884E2AEE77A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{861AAD55-3B36-46DD-A641-6884E2AEE77A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{861AAD55-3B36-46DD-A641-6884E2AEE77A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{861AAD55-3B36-46DD-A641-6884E2AEE77A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
