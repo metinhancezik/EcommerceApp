@@ -12,7 +12,6 @@ namespace IdentityServerLayer.Concrete
     {
         public static IServiceCollection AddIdentityServerServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Yeni konfigürasyon oluştur
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -47,7 +46,7 @@ namespace IdentityServerLayer.Concrete
              {
                  options.ConfigureDbContext = b => b.UseSqlServer(config.GetConnectionString("IdentityServerConnection"));
                  options.EnableTokenCleanup = true;
-                 options.TokenCleanupInterval = 3600; // Her saat başı
+                 options.TokenCleanupInterval = 3600;
              })
              .AddDeveloperSigningCredential();
 

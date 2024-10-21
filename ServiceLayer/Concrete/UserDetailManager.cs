@@ -16,10 +16,9 @@ namespace ServiceLayer.Concrete
         {
         IUserDetail _userDetail;
 
-       
-        public UserDetailManager(IUserDetail daire)
+        public UserDetailManager(IUserDetail userDetail)
         {
-            _userDetail = daire;
+            _userDetail = userDetail;
         }
 
         public UserDetails GetById(int id)
@@ -27,11 +26,7 @@ namespace ServiceLayer.Concrete
             return _userDetail.GetByID(id);
         }
 
-        public List<UserDetails> GetDaireListWithCategory(int id)
-        {
-            return _userDetail.List(x => x.Id == id);
-        }
-
+       
         public List<UserDetails> GetList()
         {
             return _userDetail.GetListAll();

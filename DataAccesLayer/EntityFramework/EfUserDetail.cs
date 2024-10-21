@@ -1,6 +1,8 @@
 ﻿using DataAccesLayer.Abstract;
+using DataAccesLayer.Concrete;
 using DataAccesLayer.Repositories;
 using EntityLayer.Concrete;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +13,6 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfUserDetail : GenericRepository<UserDetails>, IUserDetail
     {
-        public EfUserDetail(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-        }
+   
     }
 }

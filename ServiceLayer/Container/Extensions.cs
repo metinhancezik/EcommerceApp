@@ -23,9 +23,6 @@ namespace ServiceLayer.Container
         {
             services.AddScoped<IUserDetailService, UserDetailManager>();
             services.AddScoped<IUserDetail, EfUserDetail>();
-
-
-
         }
 
 

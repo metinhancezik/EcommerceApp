@@ -1,23 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
-namespace Iyzico3DPaymentShared.Models
+namespace ECommerceView.Models;
+
+public class PaymentResponse
 {
-    public class PaymentResponse
-    {
-        [JsonProperty("status")]
-        public string Status { get; set; }
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
 
-        [JsonProperty("errorMessage")]
-        public string ErrorMessage { get; set; }
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-        [JsonProperty("htmlContent")]
-        public string HtmlContent { get; set; }
-
-        // API'den dönen diğer alanları da ekleyin
-    }
+    [JsonPropertyName("htmlContent")]
+    public string? HtmlContent { get; set; }
 }
