@@ -1,40 +1,59 @@
 ﻿using FastEndpoints;
 using ECommerceView.Models;
-using Microsoft.AspNetCore.Identity;
+using AuthenticationLayer.Interfaces;
+using AuthenticationLayer.Models;
 
 namespace ECommerceView.Endpoints.Account;
 
 public class RegisterEndpoint : Endpoint<RegisterViewModel>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IAuthService _authService;
 
-    public RegisterEndpoint(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public RegisterEndpoint(IAuthService authService)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
+        _authService = authService;
     }
 
     public override void Configure()
     {
-        Post("/account/register");
+        Post("/api/register");
         AllowAnonymous();
     }
 
     public override async Task HandleAsync(RegisterViewModel req, CancellationToken ct)
     {
-        var user = new IdentityUser { UserName = req.Email, Email = req.Email };
-        var result = await _userManager.CreateAsync(user, req.Password);
-
-        if (result.Succeeded)
+   
+        var userRegistrationModel = new UserRegistrationModel
         {
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            await SendOkAsync(new { message = "Kayıt başarılı", userId = user.Id }, ct);
+            UserName = req.UserName,
+            UserSurname = req.UserSurname,
+            UserMail = req.UserMail,
+            UserPhone = req.UserPhone,
+            CountryId = req.CountryId,
+            Password = req.Password
+        };
+
+        var result = await _authService.RegisterUserAsync(userRegistrationModel);
+
+        if (result.Success)
+        {
+            var loginResult = await _authService.ValidateCredentialsAsync(req.UserMail, req.Password);
+            if (loginResult.Success)
+            {
+                await SendOkAsync(new { message = "Kayıt ve giriş başarılı", token = loginResult.Token }, ct);
+            }
+            else
+            {
+                await SendOkAsync(new { message = "Kayıt başarılı, ancak giriş yapılamadı" }, ct);
+            }
         }
         else
         {
-            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-            await SendErrorsAsync(400, ct); 
+            await SendAsync(new
+            {
+                statusCode = 400,
+                message = result.Message
+            }, 400, ct);
         }
     }
 }

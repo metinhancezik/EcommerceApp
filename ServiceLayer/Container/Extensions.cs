@@ -23,6 +23,12 @@ namespace ServiceLayer.Container
         {
             services.AddScoped<IUserDetailService, UserDetailManager>();
             services.AddScoped<IUserDetail, EfUserDetail>();
+
+            services.AddScoped<IUserAuthService, UserAuthManager>();
+            services.AddScoped<IUserAuth, EfUserAuth>();
+
+            services.AddScoped<IAuthTokensService, AuthTokensManager>();
+            services.AddScoped<IAuthTokens, EfAuthTokens>();
         }
 
 

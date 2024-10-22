@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Duende.IdentityServer" Version="7.0.7" />
     <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="7.0.7" />
     <PackageReference Include="Duende.IdentityServer.EntityFramework" Version="7.0.7" />
@@ -30,6 +31,7 @@
     <ProjectReference Include="..\Iyzico3DPaymentShared\Iyzico3DPaymentShared.csproj" />
     <ProjectReference Include="..\lyzico3DPaymentAPI\lyzico3DPaymentAPI.csproj" />
     <ProjectReference Include="..\ServiceLayer\ServiceLayer.csproj" />
+    <ProjectReference Include="..\AuthenticationLayer\AuthenticationLayer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

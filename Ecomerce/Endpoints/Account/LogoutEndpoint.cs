@@ -1,26 +1,34 @@
-﻿using FastEndpoints;
-using Microsoft.AspNetCore.Identity;
+﻿using AuthenticationLayer.Interfaces;
+using FastEndpoints;
 
-namespace ECommerceView.Endpoints.Account;
-
-public class LogoutEndpoint : EndpointWithoutRequest
+public class LogoutEndpoint : Endpoint<LogoutRequest>
 {
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IAuthService _authService;
 
-    public LogoutEndpoint(SignInManager<IdentityUser> signInManager)
+    public LogoutEndpoint(IAuthService authService)
     {
-        _signInManager = signInManager;
+        _authService = authService;
     }
 
     public override void Configure()
     {
         Post("/account/logout");
-        Roles("User"); 
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(LogoutRequest req, CancellationToken ct)
     {
-        await _signInManager.SignOutAsync();
-        await SendOkAsync(new { message = "Çıkış yapıldı" }, ct);
+        if (await _authService.RevokeTokenAsync(req.Token))
+        {
+            await SendOkAsync(new { message = "Çıkış yapıldı" }, ct);
+        }
+        else
+        {
+            await SendUnauthorizedAsync(ct);
+        }
     }
+}
+
+public class LogoutRequest
+{
+    public string Token { get; set; }
 }

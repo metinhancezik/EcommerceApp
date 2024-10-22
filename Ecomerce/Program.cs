@@ -7,12 +7,18 @@ using DataAccesLayer.Concrete;
 using ServiceLayer.Container;
 using FastEndpoints;
 using FastEndpoints.Swagger;
+using AuthenticationLayer.Extensions;
+using AuthenticationLayer.Middleware;
+using AuthenticationLayer.Extensions;
+using ServiceLayer.Container;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Servisleri ekleyin
 builder.Services.ContainerDependencies();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAuthenticationServices();
+builder.Services.AddAuthenticationServices();
 
 // FastEndpoints'i ekleyin
 builder.Services.AddFastEndpoints();
@@ -40,14 +46,14 @@ builder.Services.AddSession(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseDeveloperExceptionPage();
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -56,17 +62,17 @@ app.UseSession();
 
 app.UseRouting();
 
+// Token authentication middleware'ini ekleyin
+app.UseTokenAuthentication();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 // FastEndpoints middleware'ini ekleyin
 app.UseFastEndpoints();
 
 // Swagger UI'ý ekleyin
 app.UseSwaggerGen();
-
-// IdentityServer middleware'ini ekleyin
-//app.UseIdentityServer();
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

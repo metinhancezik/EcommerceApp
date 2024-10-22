@@ -1,27 +1,34 @@
-﻿using FastEndpoints;
+﻿using AuthenticationLayer.Interfaces;
 using ECommerceView.Models;
+using FastEndpoints;
+using Microsoft.AspNetCore.Mvc;
 
-namespace ECommerceView.Endpoints.Account;
 
 public class LoginEndpoint : Endpoint<LoginViewModel>
 {
+    private readonly IAuthService _authService;
+
+    public LoginEndpoint(IAuthService authService)
+    {
+        _authService = authService;
+    }
+
     public override void Configure()
     {
-        Post("/account/login");
+        Post("/api/login");
         AllowAnonymous();
     }
 
     public override async Task HandleAsync(LoginViewModel req, CancellationToken ct)
     {
-        // Burada login işlemlerini gerçekleştirin
-        // Örnek olarak:
-        if (req.Email == "test@example.com" && req.Password == "password")
+        var result = await _authService.ValidateCredentialsAsync(req.Email, req.Password);
+        if (result.Success)
         {
-            await SendOkAsync(new { message = "Giriş başarılı", userId = "1" }, ct);
+            await SendOkAsync(new { message = "Giriş başarılı", token = result.Token }, ct);
         }
         else
         {
-            await SendUnauthorizedAsync(ct);
+            await SendRedirectAsync("/Account/Login?error=true");
         }
     }
 }

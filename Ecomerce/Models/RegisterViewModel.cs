@@ -6,41 +6,25 @@ namespace ECommerceView.Models
     {
         [Required(ErrorMessage = "Ad alanı zorunludur.")]
         [Display(Name = "Ad")]
-        public string Name { get; set; }
+        public string UserName { get; set; }
 
         [Required(ErrorMessage = "Soyad alanı zorunludur.")]
         [Display(Name = "Soyad")]
-        public string Surname { get; set; }
+        public string UserSurname { get; set; }
 
         [Required(ErrorMessage = "E-posta alanı zorunludur.")]
         [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
         [Display(Name = "E-posta")]
-        public string Email { get; set; }
+        public string UserMail { get; set; }
 
         [Required(ErrorMessage = "Telefon numarası zorunludur.")]
         [Phone(ErrorMessage = "Geçerli bir telefon numarası giriniz.")]
         [Display(Name = "Telefon Numarası")]
-        public string GsmNumber { get; set; }
+        public string UserPhone { get; set; }
 
-        [Required(ErrorMessage = "Kimlik numarası zorunludur.")]
-        [Display(Name = "Kimlik Numarası")]
-        public string IdentityNumber { get; set; }
-
-        [Required(ErrorMessage = "Adres alanı zorunludur.")]
-        [Display(Name = "Adres")]
-        public string RegistrationAddress { get; set; }
-
-        [Required(ErrorMessage = "Şehir alanı zorunludur.")]
-        [Display(Name = "Şehir")]
-        public string City { get; set; }
-
-        [Required(ErrorMessage = "Ülke alanı zorunludur.")]
+        [Required(ErrorMessage = "Ülke seçimi zorunludur.")]
         [Display(Name = "Ülke")]
-        public string Country { get; set; }
-
-        [Required(ErrorMessage = "Posta kodu zorunludur.")]
-        [Display(Name = "Posta Kodu")]
-        public string ZipCode { get; set; }
+        public int CountryId { get; set; }
 
         [Required(ErrorMessage = "Şifre alanı zorunludur.")]
         [StringLength(100, ErrorMessage = "Şifre en az {2} karakter uzunluğunda olmalıdır.", MinimumLength = 6)]
