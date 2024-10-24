@@ -66,20 +66,45 @@ namespace AuthenticationLayer.Services
 
             return (true, "Kullanıcı başarıyla kaydedildi.");
         }
+
         public async Task<LoginResult> ValidateCredentialsAsync(string email, string password)
         {
-            var user = _userAuthService.GetList().FirstOrDefault(u => u.User.UserMail == email);
-            if (user == null) return new LoginResult { Success = false };
-
-            if (PasswordHasher.VerifyPassword(user.PasswordHash, password))
+           
+            if (string.IsNullOrEmpty(email))
             {
-                var token = await GenerateTokenAsync(user.UserId);
+                return new LoginResult { Success = false, Error = "Email boş olamaz." };
+            }
+
+           
+            if (string.IsNullOrEmpty(password))
+            {
+                return new LoginResult { Success = false, Error = "Şifre boş olamaz." };
+            }
+
+            
+            var userInformation = _userDetailService.GetUserByMail(email);
+            if (userInformation == null)
+            {
+                return new LoginResult { Success = false, Error = "Kullanıcı bulunamadı." };
+            }
+
+            
+            var user = _userAuthService.GetByUserID(userInformation.Id);
+            if (user == null)
+            {
+                return new LoginResult { Success = false, Error = "Kullanıcı bulunamadı." };
+            }
+
+            
+            if (PasswordHasher.VerifyPassword(user.PasswordHash, password))
+            {          
+                var token = await GenerateTokenAsync(user.Id); 
                 return new LoginResult { Success = true, Token = token.AccessToken };
             }
 
-            return new LoginResult { Success = false };
+            
+            return new LoginResult { Success = false, Error = "Geçersiz şifre." };
         }
-
         public async Task<TokenModel> GenerateTokenAsync(long userId)
         {
             var token = new TokenModel

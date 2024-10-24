@@ -27,6 +27,10 @@ namespace ServiceLayer.Concrete
             return _userAuth.GetByID(id);
         }
 
+        public UserAuth GetByUserID(long id)
+        {
+           return _userAuth.GetByUserID(id);
+        }
 
         public List<UserAuth> GetList()
         {

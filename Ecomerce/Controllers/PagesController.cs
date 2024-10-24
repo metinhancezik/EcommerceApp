@@ -6,6 +6,7 @@ using Iyzico3DPaymentProject.Models;
 using ECommerceView.Models;
 using Microsoft.AspNetCore.Identity;
 using ServiceLayer.Abstract;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace lyzico3DPaymentProject.Controllers
 {
@@ -13,10 +14,12 @@ namespace lyzico3DPaymentProject.Controllers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserDetailService _userDetailService;
-        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService)
+        private ICountryService _countryService;
+        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService, ICountryService countryService)
         {
             _httpContextAccessor = httpContextAccessor;
             _userDetailService = userDetailService;
+            _countryService = countryService;
         }
 
         public IActionResult Home()
@@ -84,6 +87,7 @@ namespace lyzico3DPaymentProject.Controllers
             // Model geçerli değilse, hataları göster ve formu tekrar göster
             return View("Account", model);
         }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -93,6 +97,23 @@ namespace lyzico3DPaymentProject.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            var countries = _countryService.GetList();
+
+            // Ülke listesini kontrol et
+            if (countries == null || !countries.Any())
+            {
+                ViewBag.Countries = new SelectList(Enumerable.Empty<SelectListItem>()); // Boş bir liste oluştur
+                Console.WriteLine("Ülke listesi boş veya null.");
+            }
+            else
+            {
+                ViewBag.Countries = new SelectList(countries, "Id", "CountryName"); // Doğru alan adını kullanın
+                foreach (var country in countries)
+                {
+                    Console.WriteLine($"Ülke ID: {country.Id}, Ülke Adı: {country.CountryName}");
+                }
+            }
+
             return View();
         }
 

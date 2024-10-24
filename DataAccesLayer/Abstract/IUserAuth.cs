@@ -9,6 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface IUserAuth : IGenericDal<UserAuth>
     {
-        
+        UserAuth GetByUserID(long id);
     }
 }

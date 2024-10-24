@@ -11,7 +11,7 @@ namespace EntityLayer.Concrete
         public long Id { get; set; }
         public long UserId { get; set; }
         public string PasswordHash { get; set; }
-        public DateTime LastLoginTime { get; set; }
+        public DateTime LastLoginTime { get; set; } = DateTime.UtcNow;
         public int FailedLoginAttempts { get; set; }
         public bool IsLocked { get; set; }
         public bool EmailConfirmed { get; set; }

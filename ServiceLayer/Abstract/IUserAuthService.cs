@@ -10,6 +10,6 @@ namespace ServiceLayer.Abstract
 {
     public interface IUserAuthService : IGenericService<UserAuth>
     {
-        
+        public UserAuth GetByUserID(long id);
     }
 }

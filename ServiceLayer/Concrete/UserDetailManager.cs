@@ -1,5 +1,6 @@
 ﻿using DataAccesLayer.Abstract;
 using DataAccesLayer.Concrete;
+using DataAccesLayer.EntityFramework;
 using EntityLayer.Concrete;
 using ServiceLayer.Abstract;
 using System;
@@ -25,8 +26,11 @@ namespace ServiceLayer.Concrete
         {
             return _userDetail.GetByID(id);
         }
+        public UserDetails GetUserByMail(string email)
+        {
+            return _userDetail.GetUserByMail(email);
+        }
 
-       
         public List<UserDetails> GetList()
         {
             return _userDetail.GetListAll();

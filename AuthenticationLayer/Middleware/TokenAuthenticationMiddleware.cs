@@ -2,6 +2,8 @@
 using AuthenticationLayer.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace AuthenticationLayer.Middleware
 {
@@ -22,12 +24,19 @@ namespace AuthenticationLayer.Middleware
 
             if (token != null && await authService.ValidateTokenAsync(token))
             {
-                // Token geçerli
-                // Burada gerekli işlemleri yapabilirsiniz, örneğin:
-                // context.Items["UserId"] = ... // Token'dan çıkarılan kullanıcı ID'si
+                
+                var userId = GetUserIdFromToken(token); 
+                context.Items["UserId"] = userId; 
             }
 
             await _next(context);
+        }
+
+        private long GetUserIdFromToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            return long.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value); 
         }
     }
 
