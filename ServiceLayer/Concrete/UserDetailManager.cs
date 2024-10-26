@@ -50,6 +50,11 @@ namespace ServiceLayer.Concrete
         {
             _userDetail.Update(t);
         }
+
+        public UserDetails GetUserByLongId(long id)
+        {
+           return _userDetail.GetUserByLongId(id);
+        }
     }
     
 }

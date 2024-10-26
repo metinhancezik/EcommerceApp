@@ -10,5 +10,6 @@ namespace ServiceLayer.Abstract
     public interface IUserDetailService : IGenericService<UserDetails>
     {
         UserDetails GetUserByMail(string email);
+        UserDetails GetUserByLongId(long id);
     }
 }

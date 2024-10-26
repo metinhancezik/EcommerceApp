@@ -28,9 +28,10 @@ public class LoginEndpoint : Endpoint<LoginViewModel>
         if (result.Success)
         {
             var claims = new List<Claim>
-            {
-                 new Claim(ClaimTypes.Name, req.Email),
-            };
+        {
+            new Claim(ClaimTypes.Name, req.Email),
+            new Claim("token", result.Token)
+        };
 
             try
             {

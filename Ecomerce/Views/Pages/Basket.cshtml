@@ -1,0 +1,51 @@
+﻿@using ECommerceView.Models
+@model List<ProductViewModel>
+
+@{
+    ViewData["Title"] = "Ürünler";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Ürünler</h1>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning text-center" role="alert">
+            Sepetiniz boş.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var product in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-lg border-0">
+                        <img src="@product.ImageUrl" class="card-img-top" alt="@product.ProductName" style="height: 200px; object-fit: cover;" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-primary">@product.ProductName</h5>
+                            <p class="card-text mb-1">
+                                <strong>Fiyat:</strong> @product.UnitPrice.ToString("C")
+                            </p>
+                            <p class="card-text mb-1">
+                                <strong>Stok:</strong> @product.Stock
+                            </p>
+                            <p class="card-text mb-3">
+                                <strong>Satıcı:</strong> @product.VendorName
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="text-center mt-4">
+        <a href="@Url.Action("AddToBasket", "Pages")"
+           class="btn btn-primary" style="border-radius: 5px; padding: 10px; max-width: 200px; display: inline-block;">
+            Siparişi Onayla
+        </a>
+    </div>
+
+</div>

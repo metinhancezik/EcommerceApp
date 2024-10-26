@@ -10,5 +10,6 @@ namespace DataAccesLayer.Abstract
     public interface IUserDetail: IGenericDal<UserDetails>
     {
         UserDetails GetUserByMail(string email);
+        UserDetails GetUserByLongId(long id);
     }
 }

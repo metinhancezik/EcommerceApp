@@ -26,6 +26,11 @@ namespace ServiceLayer.Concrete
             return _authTokens.GetByID(id);
         }
 
+        public Task<long?> GetUserIdFromTokenAsync(string token)
+        {
+            return _authTokens.GetUserIdFromTokenAsync(token);
+        }
+
         public List<AuthTokens> GetList()
         {
             return _authTokens.GetListAll();

@@ -10,6 +10,7 @@ namespace ServiceLayer.Abstract
 {
     public interface IAuthTokensService : IGenericService<AuthTokens>
     {
-      
+        Task<long?> GetUserIdFromTokenAsync(string token);
+
     }
 }

@@ -5,7 +5,7 @@ namespace Iyzico3DPaymentProject.Models
 {
     public class AccountViewModel
     {
-        public int Id { get; set; } 
+        public long Id { get; set; } 
         public string IdentityServerID { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }

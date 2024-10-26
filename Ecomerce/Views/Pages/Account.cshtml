@@ -4,68 +4,62 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="account-container mx-auto" style="max-width: 500px;">
+<div class="account-container mx-auto my-1" style="max-width: 450px;">
     <div class="modal-dialog" role="document">
-        <div class="modal-content rounded-4 shadow">
-            <div class="modal-header p-4">
-                <h1 class="modal-title fs-5">Hesap Bilgileri</h1>
+        <div class="modal-content rounded-4 shadow-lg border-0">
+            <div class="modal-header p-4 bg-primary text-white rounded-top">
+                <h1 class="modal-title fs-4 fw-bold">Hesap Bilgileri</h1>
             </div>
             @using (Html.BeginForm("SaveAccount", "Pages", FormMethod.Post, new { id = "accountForm" }))
             {
-                <div class="modal-body py-0">
-                    <div class="hesap-formu p-4">
+                <div class="modal-body">
+                    <div class="p-4">
                         @Html.AntiForgeryToken()
 
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.Name, "Ad:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", required = "required" })
+                        <div class="form-floating mb-3">
+                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", required = "required", @readonly = "readonly", placeholder = "Ad" })
+                            @Html.LabelFor(m => m.Name, "Ad")
                         </div>
 
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.Surname, "Soyad:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.Surname, new { @class = "form-control", required = "required" })
+                        <div class="form-floating mb-3">
+                            @Html.TextBoxFor(m => m.Surname, new { @class = "form-control", required = "required", @readonly = "readonly", placeholder = "Soyad" })
+                            @Html.LabelFor(m => m.Surname, "Soyad")
                         </div>
 
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.GsmNumber, "Telefon Numarası:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.GsmNumber, new { @class = "form-control", required = "required", pattern = "^[0-9]{10}$" })
+                        <div class="form-floating mb-3">
+                            @Html.TextBoxFor(m => m.GsmNumber, new { @class = "form-control", required = "required", pattern = @"^\d{10}$", title = "10 haneli bir telefon numarası girin.", @readonly = "readonly", placeholder = "Telefon Numarası" })
+                            @Html.LabelFor(m => m.GsmNumber, "Telefon Numarası")
                         </div>
 
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.Email, "E-posta:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", required = "required", type = "email", pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" })
-                        </div>
-
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.IdentityNumber, "Kimlik Numarası:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.IdentityNumber, new { @class = "form-control", required = "required" })
-                        </div>
-
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.RegistrationAddress, "Adres:", new { @class = "form-label" })
-                            @Html.TextAreaFor(m => m.RegistrationAddress, new { @class = "form-control", required = "required", rows = "3" })
-                        </div>
-
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.City, "Şehir:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.City, new { @class = "form-control", required = "required" })
-                        </div>
-
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.Country, "Ülke:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.Country, new { @class = "form-control", required = "required" })
-                        </div>
-
-                        <div class="mb-3">
-                            @Html.LabelFor(m => m.ZipCode, "Posta Kodu:", new { @class = "form-label" })
-                            @Html.TextBoxFor(m => m.ZipCode, new { @class = "form-control", required = "required" })
+                        <div class="form-floating mb-3">
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", required = "required", type = "email", @readonly = "readonly", placeholder = "E-posta" })
+                            @Html.LabelFor(m => m.Email, "E-posta")
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer flex-column p-4">
-                    <button type="submit" form="accountForm" class="btn btn-lg btn-primary">Kaydet</button>
+
+                    <div class="modal-footer p-4 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary btn-lg px-4" id="editButton">
+                            <i class="bi bi-pencil-square me-2"></i>Düzenle
+                        </button>
+                        <button type="submit" form="accountForm" class="btn btn-primary btn-lg px-4" id="saveButton" style="display:none;">
+                            <i class="bi bi-save2 me-2"></i>Kaydet
+                        </button>
+                    </div>
                 </div>
             }
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById("editButton").addEventListener("click", function () {
+            // Tüm inputların readonly özelliğini kaldır
+            document.querySelectorAll(".form-control").forEach(input => input.removeAttribute("readonly"));
+
+            // Düzenle butonunu gizle, Kaydet butonunu göster
+            this.style.display = "none";
+            document.getElementById("saveButton").style.display = "block";
+        });
+    </script>
+}

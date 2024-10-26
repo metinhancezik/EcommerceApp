@@ -9,6 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface IAuthTokens : IGenericDal<AuthTokens>
     {
-      
+        Task<long?> GetUserIdFromTokenAsync(string token); 
     }
 }
