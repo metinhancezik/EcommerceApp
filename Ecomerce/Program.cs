@@ -19,7 +19,12 @@ builder.Services.ContainerDependencies();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddAuthenticationServices();
 builder.Services.AddAuthenticationServices();
-
+builder.Services.AddAuthentication("login")
+    .AddCookie("login", options =>
+    {
+        options.LoginPath = "/api/login"; // Giriþ yolu
+        options.LogoutPath = "/api/logout"; // Çýkýþ yolu
+    });
 // FastEndpoints'i ekleyin
 builder.Services.AddFastEndpoints();
 

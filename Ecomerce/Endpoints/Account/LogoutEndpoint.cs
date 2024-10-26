@@ -12,7 +12,7 @@ public class LogoutEndpoint : Endpoint<LogoutRequest>
 
     public override void Configure()
     {
-        Post("/account/logout");
+        Post("/api/logout");
     }
 
     public override async Task HandleAsync(LogoutRequest req, CancellationToken ct)

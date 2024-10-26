@@ -64,13 +64,18 @@
                     data: JSON.stringify(formData),
                     success: function (response) {
                         if (response.success) {
-                            window.location.href = '/'; 
+                            debugger;
+                            window.location.href = '/Pages/Home';
                         } else {
+                            debugger;
                             $('#errorMessage').text(response.message).show();
                         }
                     },
-                    error: function (xhr, status, error) {
-                        $('#errorMessage').text('Bir hata oluştu: ' + error).show();
+                    error: function (xhr) {
+                        debugger;
+                        // Hata mesajını sunucudan al
+                        var errorMessage = xhr.responseJSON ? xhr.responseJSON.message : 'Bir hata oluştu.';
+                        $('#errorMessage').text(errorMessage).show();
                     }
                 });
             });

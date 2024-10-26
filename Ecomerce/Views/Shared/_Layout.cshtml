@@ -37,11 +37,10 @@
                             <li class="nav-item">
                                 <span class="nav-link">@User.Identity.Name!</span>
                             </li>
-
                             <li class="nav-item">
-                                <a href="@Url.Action("Logout", "Account")" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <button id="logoutButton" class="btn btn-link" style="background: none; border: none; padding: 0; color: inherit; cursor: pointer;">
                                     Çıkış Yap
-                                </a>
+                                </button>
                             </li>
 
                         }
@@ -83,6 +82,30 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
+
+        $(document).ready(function () {
+            $('#logoutButton').click(function (e) {
+                e.preventDefault(); // Varsayılan davranışı engelle
+
+                // Çıkış isteği için AJAX
+                $.ajax({
+                    url: '/api/logout', // Çıkış endpoint'i
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ Token: 'YOUR_TOKEN_HERE' }), // Token'ı buraya ekleyin
+                    success: function (response) {
+                        if (response.message) {
+                            alert(response.message); // Çıkış mesajını göster
+                            window.location.href = '/Pages/Home'; // Yönlendir
+                        }
+                    },
+                    error: function (xhr) {
+                        var errorMessage = xhr.responseJSON ? xhr.responseJSON.message : 'Bir hata oluştu.';
+                        alert(errorMessage); // Hata mesajını göster
+                    }
+                });
+            });
+        });
         function decodeHtmlEntities(text) {
             var textArea = document.createElement('textarea');
             textArea.innerHTML = text;

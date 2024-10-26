@@ -27,23 +27,31 @@ public class LoginEndpoint : Endpoint<LoginViewModel>
         var result = await _authService.ValidateCredentialsAsync(req.Email, req.Password);
         if (result.Success)
         {
-
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, req.Email),
+                 new Claim(ClaimTypes.Name, req.Email),
             };
 
-              var claimsIdentity = new ClaimsIdentity(claims, "login");
-              var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+            try
+            {
+                var claimsIdentity = new ClaimsIdentity(claims, "login");
+                var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            await HttpContext.SignInAsync(claimsPrincipal); // Bu kısımda hata veriyor henüz
-
-            await SendOkAsync(new { message = "Giriş başarılı", token = result.Token }, ct);
-            await SendRedirectAsync("/Pages/Home");
+                await HttpContext.SignInAsync(claimsPrincipal);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new { success = false, message = ex.Message };
+                await HttpContext.Response.WriteAsJsonAsync(errorResponse);
+                return; 
+            }
+            await SendOkAsync(new {success=true, message = "Giriş başarılı", token = result.Token }, ct);
         }
         else
         {
-            await SendRedirectAsync("/Pages/Login?error=true&message=" + result.Error);
+            var errorResponse = new { success = false, message = result.Error };
+            HttpContext.Response.StatusCode = 400;
+            await HttpContext.Response.WriteAsJsonAsync(errorResponse); 
         }
     }
 }
