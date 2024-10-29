@@ -33,20 +33,18 @@ namespace lyzico3DPaymentProject.Controllers
             return View();
         }
         [HttpGet]
-        public IActionResult Basket()
+        public async Task<IActionResult> Basket()
         {
-            
+            // FastEndpoint üzerinden sepet verilerini al
             var cart = GetCartFromCookie();
-
-            
             var productViewModels = cart.Select(item => new ProductViewModel
             {
                 Id = item.productId,
                 ProductName = item.productName,
                 UnitPrice = item.price,
-                Stock = item.quantity, 
-                ImageUrl = $"~/pictures/product{item.productId}.jpg", 
-                VendorName = "Satıcı" 
+                Stock = item.quantity,
+                ImageUrl = $"~/pictures/product{item.productId}.jpg",
+                VendorName = "Satıcı"
             }).ToList();
 
             return View(productViewModels);
@@ -54,7 +52,7 @@ namespace lyzico3DPaymentProject.Controllers
 
         private List<CartItemViewModel> GetCartFromCookie()
         {
-            var cart = HttpContext.Request.Cookies["cart"];
+            var cart = _httpContextAccessor.HttpContext.Request.Cookies["cart"];
             return string.IsNullOrEmpty(cart) ? new List<CartItemViewModel>() : JsonConvert.DeserializeObject<List<CartItemViewModel>>(cart);
         }
 

@@ -84,26 +84,37 @@
             $('#logoutButton').click(function (e) {
                 e.preventDefault(); // Varsayılan davranışı engelle
 
-                // Çıkış isteği için AJAX
+                debugger;
+                var token = getCookie('auth_token'); // Çerezi almak için bir fonksiyon kullanıyoruz
+
+               
+               
+                console.log(document.cookie);
                 $.ajax({
-                    url: '/api/logout', // Çıkış endpoint'i
+                    url: '/api/logout', 
                     type: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({ Token: 'YOUR_TOKEN_HERE' }), // Token'ı buraya ekleyin
+                    data: JSON.stringify({ Token: token }), 
                     success: function (response) {
                         if (response.message) {
-                            alert(response.message); // Çıkış mesajını göster
-                            window.location.href = '/Pages/Home'; // Yönlendir
+                            alert(response.message); 
+                            window.location.href = '/Pages/Home'; 
                         }
                     },
                     error: function (xhr) {
                         var errorMessage = xhr.responseJSON ? xhr.responseJSON.message : 'Bir hata oluştu.';
-                        alert(errorMessage); // Hata mesajını göster
+                        alert(errorMessage); 
                     }
                 });
             });
         });
 
+       
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }
         function decodeHtmlEntities(text) {
             var textArea = document.createElement('textarea');
             textArea.innerHTML = text;

@@ -76,19 +76,20 @@
                 </div>
             </div>
         </div>
-        <!-- Sepet Bölümü -->
+        
         <div class="col-md-3">
             <aside class="sidebar">
                 <h4>Sepetim</h4>
                 <ul id="cartItems" class="list-group">
                     <li class="list-group-item">Sepet boş</li>
                 </ul>
-                <button id="checkoutButton" class="btn btn-primary mt-3">Ödeme Yap</button>
+                <button class="btn btn-primary mt-3" onclick="viewBasket()">Sepeti Görüntüle</button>
             </aside>
         </div>
 
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
-            // Cookie'den sepeti okuma
+            
             function getCartFromCookie() {
                 const cart = document.cookie
                     .split('; ')
@@ -96,12 +97,6 @@
                 return cart ? JSON.parse(decodeURIComponent(cart)) : [];
             }
 
-            // Sepeti cookie'ye kaydetme
-            function saveCartToCookie(cart) {
-                document.cookie = `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/; max-age=2592000`; // 30 gün
-            }
-
-            // Sepete ürün ekleme
             function addToCart(productId, productName, price) {
                 const cart = getCartFromCookie();
                 const item = cart.find(i => i.productId === productId);
@@ -112,19 +107,49 @@
                     cart.push({ productId, productName, price, quantity: 1 });
                 }
 
-                saveCartToCookie(cart);
-                renderCart();
+               
+                $.ajax({
+                    url: '/api/cart/add',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        productId: productId,
+                        productName: productName,
+                        price: price,
+                        quantity: 1
+                    }),
+                    success: function (response) {
+                        console.log('Ürün sepete eklendi:', response);
+                        renderCart(); 
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON ? xhr.responseJSON.message :
+                            'Sepete ekleme sırasında bir hata oluştu.';
+                        console.error('Hata:', errorMessage);
+                        alert(errorMessage);
+                    }
+                });
             }
 
-            // Sepetten ürün silme
             function removeFromCart(productId) {
-                let cart = getCartFromCookie();
-                cart = cart.filter(item => item.productId !== productId); // Ürünü çıkar
-                saveCartToCookie(cart);
-                renderCart();
+                $.ajax({
+                    url: '/api/cart/remove',
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ productId: productId }), 
+                    success: function (response) {
+                        console.log('Ürün sepetten kaldırıldı:', response);
+                        renderCart();
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON ? xhr.responseJSON.message :
+                            'Sepetten kaldırma sırasında bir hata oluştu.';
+                        console.error('Hata:', errorMessage);
+                        alert(errorMessage);
+                    }
+                });
             }
 
-            // Sepeti ekrana yazdırma
             function renderCart() {
                 const cart = getCartFromCookie();
                 const cartItems = document.getElementById('cartItems');
@@ -139,42 +164,19 @@
                     const li = document.createElement('li');
                     li.className = 'list-group-item d-flex justify-content-between align-items-center';
                     li.innerHTML = `
-                            ${item.productName} - ${item.quantity} Adet - ${item.price * item.quantity} TL
-                            <button class="btn btn-sm btn-danger ms-2" onclick="removeFromCart(${item.productId})">
-                                &times;
-                            </button>
-                        `;
+                                    ${item.productName} - ${item.quantity} Adet - ${item.price * item.quantity} TL
+                                    <button class="btn btn-sm btn-danger ms-2" onclick="removeFromCart(${item.productId})">
+                                        &times;
+                                    </button>
+                                `;
                     cartItems.appendChild(li);
                 });
             }
+            function viewBasket() {
+                window.location.href = '/Pages/Basket';
+            }
 
-            // Ödeme Yap butonuna tıklanınca
-            document.getElementById('checkoutButton').addEventListener('click', () => {
-                const cart = getCartFromCookie();
-                if (cart.length === 0) {
-                    alert('Sepetiniz boş!');
-                    return;
-                }
-
-                fetch('/api/checkout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ cart })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert('Sipariş tamamlandı!');
-                        saveCartToCookie([]); // Sepeti temizle
-                        renderCart();
-                    })
-                    .catch(error => {
-                        console.error('Hata:', error);
-                        alert('Ödeme sırasında bir hata oluştu.');
-                    });
-            });
-
-            // Sayfa yüklendiğinde sepeti göster
             document.addEventListener('DOMContentLoaded', renderCart);
         </script>
+    </div>
+</div>

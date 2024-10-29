@@ -1,5 +1,6 @@
 ﻿using AuthenticationLayer.Interfaces;
 using FastEndpoints;
+using Microsoft.AspNetCore.Authentication;
 
 public class LogoutEndpoint : Endpoint<LogoutRequest>
 {
@@ -19,6 +20,10 @@ public class LogoutEndpoint : Endpoint<LogoutRequest>
     {
         if (await _authService.RevokeTokenAsync(req.Token))
         {
+            
+            await HttpContext.SignOutAsync();
+            HttpContext.Response.Cookies.Delete("auth_token");
+
             await SendOkAsync(new { message = "Çıkış yapıldı" }, ct);
         }
         else

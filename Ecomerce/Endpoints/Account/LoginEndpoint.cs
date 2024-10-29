@@ -39,20 +39,28 @@ public class LoginEndpoint : Endpoint<LoginViewModel>
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
                 await HttpContext.SignInAsync(claimsPrincipal);
+
+
+                HttpContext.Response.Cookies.Append("auth_token", result.Token, new CookieOptions
+                {
+                    HttpOnly = false,
+                     Secure = false, 
+                    SameSite = SameSiteMode.Strict
+                });
             }
             catch (Exception ex)
             {
                 var errorResponse = new { success = false, message = ex.Message };
                 await HttpContext.Response.WriteAsJsonAsync(errorResponse);
-                return; 
+                return;
             }
-            await SendOkAsync(new {success=true, message = "Giriş başarılı", token = result.Token }, ct);
+            await SendOkAsync(new { success = true, message = "Giriş başarılı", token = result.Token }, ct);
         }
         else
         {
             var errorResponse = new { success = false, message = result.Error };
             HttpContext.Response.StatusCode = 400;
-            await HttpContext.Response.WriteAsJsonAsync(errorResponse); 
+            await HttpContext.Response.WriteAsJsonAsync(errorResponse);
         }
     }
 }

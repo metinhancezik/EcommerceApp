@@ -129,7 +129,12 @@ namespace AuthenticationLayer.Services
 
         public async Task<bool> RevokeTokenAsync(string token)
         {
-            var authToken = _authTokensService.GetList().FirstOrDefault(t => t.AccessToken == token);
+            
+            string decodedToken = Uri.UnescapeDataString(token);
+
+         
+            var authToken = _authTokensService.GetList().FirstOrDefault(t => t.AccessToken == decodedToken);
+
             if (authToken == null) return false;
 
             authToken.Revoked = true;
@@ -137,11 +142,24 @@ namespace AuthenticationLayer.Services
             return true;
         }
 
+
         public async Task<bool> ValidateTokenAsync(string token)
         {
-            var authToken = _authTokensService.GetList().FirstOrDefault(t => t.AccessToken == token);
-            return authToken != null && !authToken.Revoked && authToken.ExpiresAt > DateTime.UtcNow;
+            var authToken = _authTokensService.GetList()
+                .FirstOrDefault(t => t.AccessToken == token);
+
+            if (authToken == null) return false;
+
+            if (authToken.ExpiresAt <= DateTime.UtcNow)
+            {
+                authToken.Revoked = true;
+                _authTokensService.TUpdate(authToken);
+                return false;
+            }
+
+            return !authToken.Revoked;
         }
+
 
         private string GenerateRandomToken()
         {
