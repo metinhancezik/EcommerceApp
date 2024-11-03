@@ -1,14 +1,14 @@
-﻿using lyzico3DPaymentProject.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
-using Iyzico3DPaymentProject.Models;
-using ECommerceView.Models;
 using Microsoft.AspNetCore.Identity;
 using ServiceLayer.Abstract;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using EntityLayer.Concrete;
 using DataAccesLayer.Abstract;
+using ECommerceView.Models.Cart;
+using ECommerceView.Models.Account;
+using ECommerceView.Models.Product;
 
 namespace lyzico3DPaymentProject.Controllers
 {
@@ -18,19 +18,22 @@ namespace lyzico3DPaymentProject.Controllers
         private readonly IUserDetailService _userDetailService;
         private ICountryService _countryService;
         private IAuthTokensService _authTokensService;
-        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService, ICountryService countryService, IAuthTokensService authTokensService)
+        private IProductsService _productsService;
+        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService, ICountryService countryService, IAuthTokensService authTokensService, IProductsService productsService)
         {
             _httpContextAccessor = httpContextAccessor;
             _userDetailService = userDetailService;
             _countryService = countryService;
             _authTokensService = authTokensService;
+            _productsService = productsService;
         }
 
 
         [HttpGet]
         public IActionResult Home()
         {
-            return View();
+            var products = _productsService.GetList();
+            return View(products);
         }
         [HttpGet]
         public async Task<IActionResult> Basket()

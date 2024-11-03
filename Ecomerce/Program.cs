@@ -11,6 +11,7 @@ using AuthenticationLayer.Extensions;
 using AuthenticationLayer.Middleware;
 using AuthenticationLayer.Extensions;
 using ServiceLayer.Container;
+using ECommerceView.Endpoints.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddAuthentication("login")
         options.LoginPath = "/api/login"; // Giriþ yolu
         options.LogoutPath = "/api/logout"; // Çýkýþ yolu
     });
+builder.Services.AddScoped<ISyncCartToDatabaseEndpoint, SyncCartToDatabaseEndpoint>();
 // FastEndpoints'i ekleyin
 builder.Services.AddFastEndpoints();
 

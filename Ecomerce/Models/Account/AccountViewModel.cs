@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Iyzico3DPaymentProject.Models
+namespace ECommerceView.Models.Account
 {
     public class AccountViewModel
     {
-        public long Id { get; set; } 
+        public long Id { get; set; }
         public string IdentityServerID { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }

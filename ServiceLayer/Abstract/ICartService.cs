@@ -10,6 +10,6 @@ namespace ServiceLayer.Abstract
 {
     public interface ICartService : IGenericService<Cart>
     {
-        
+        Task<Cart> GetByUserId(long userId);
     }
 }

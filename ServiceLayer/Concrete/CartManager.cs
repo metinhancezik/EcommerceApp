@@ -21,6 +21,12 @@ namespace ServiceLayer.Concrete
         {
             _cart = cart;
         }
+
+        public Task<Cart> GetByUserId(long userId)
+        {
+            return _cart.GetByUserId(userId);
+        }
+
         public Cart GetById(int id)
         {
             return _cart.GetByID(id);

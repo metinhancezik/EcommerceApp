@@ -2,6 +2,7 @@
 using DataAccesLayer.Concrete;
 using DataAccesLayer.Repositories;
 using EntityLayer.Concrete;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,12 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfCart : GenericRepository<Cart>, ICart
     {
-        
+        public async Task<Cart> GetByUserId(long userId)
+        {
+            using var context = new Context();
+            return await context.Carts
+                .Include(c => c.CartItems) 
+                .FirstOrDefaultAsync(c => c.UserId == userId && c.IsActive);
+        }
     }
 }

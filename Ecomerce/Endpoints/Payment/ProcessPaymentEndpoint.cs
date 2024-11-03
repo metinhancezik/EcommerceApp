@@ -6,7 +6,8 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 using Iyzico3DPayment.Shared.Models;
-using Iyzico3DPaymentProject.Models;
+using ECommerceView.Models.Payment;
+using ECommerceView.Models.Account;
 
 namespace ECommerceView.Endpoints.Payment;
 

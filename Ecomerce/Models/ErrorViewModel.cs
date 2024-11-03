@@ -1,4 +1,4 @@
-namespace lyzico3DPaymentProject.Models
+namespace ECommerceView.Models
 {
     public class ErrorViewModel
     {

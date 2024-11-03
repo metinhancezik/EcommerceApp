@@ -1,4 +1,4 @@
-﻿namespace lyzico3DPaymentProject.Models
+﻿namespace ECommerceView.Models.Buyer
 {
     public class BuyerViewModel
     {

@@ -36,6 +36,9 @@ namespace ServiceLayer.Container
             services.AddScoped<ICartService, CartManager>();
             services.AddScoped<ICart, EfCart>();
 
+            services.AddScoped<ICartItems, EfCartItems>();
+            services.AddScoped<ICartItemsService, CartItemsManager>();
+
             services.AddScoped<ICityService, CityManager>();
             services.AddScoped<ICity, EfCity>();
 

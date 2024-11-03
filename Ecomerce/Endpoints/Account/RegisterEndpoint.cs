@@ -1,7 +1,7 @@
 ﻿using FastEndpoints;
-using ECommerceView.Models;
 using AuthenticationLayer.Interfaces;
 using AuthenticationLayer.Models;
+using ECommerceView.Models.Account;
 
 namespace ECommerceView.Endpoints.Account;
 

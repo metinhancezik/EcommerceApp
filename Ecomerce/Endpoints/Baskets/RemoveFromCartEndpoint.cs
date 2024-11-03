@@ -2,62 +2,116 @@
 {
     using FastEndpoints;
     using Microsoft.AspNetCore.Http;
-    using global::ECommerceView.Models;
+    using ECommerceView.Models.Cart;
     using Newtonsoft.Json;
+    using ServiceLayer.Abstract;
 
-    namespace ECommerceView.Endpoints.Baskets
+    public class RemoveFromCartEndpoint : Endpoint<RemoveFromCartRequestViewModel>
     {
-        public class RemoveFromCartEndpoint : Endpoint<RemoveFromCartRequestViewModel>
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICartService _cartService;
+        private readonly ICartItemsService _cartItemsService;
+        private readonly IAuthTokensService _authTokensService;
+
+        public RemoveFromCartEndpoint(
+            IHttpContextAccessor httpContextAccessor,
+            ICartService cartService,
+            ICartItemsService cartItemsService,
+            IAuthTokensService authTokensService)
         {
-            private readonly IHttpContextAccessor _httpContextAccessor;
+            _httpContextAccessor = httpContextAccessor;
+            _cartService = cartService;
+            _cartItemsService = cartItemsService;
+            _authTokensService = authTokensService;
+        }
 
-            public RemoveFromCartEndpoint(IHttpContextAccessor httpContextAccessor)
+        public override void Configure()
+        {
+            Delete("api/cart/remove");
+            AllowAnonymous();
+        }
+
+        public override async Task HandleAsync(RemoveFromCartRequestViewModel req, CancellationToken ct)
+        {
+            try
             {
-                _httpContextAccessor = httpContextAccessor;
-            }
+                // Token kontrolü
+                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var userId = await _authTokensService.GetUserIdFromTokenAsync(token);
 
-            public override void Configure()
-            {
-                Delete("api/cart/remove"); // Endpoint URL'si
-                AllowAnonymous();
-            }
-
-            public override async Task HandleAsync(RemoveFromCartRequestViewModel req, CancellationToken ct)
-            {
-                // Cookie'den mevcut sepeti al
-                var cart = GetCartFromCookie();
-
-                // Ürünü sepetten kaldır
-                var item = cart.Find(i => i.productId == req.ProductId);
-                if (item != null)
+                if (userId.HasValue) // Kullanıcı login olmuşsa
                 {
-                    cart.Remove(item);
-                    SaveCartToCookie(cart); // Güncellenmiş sepeti cookie'ye kaydet
+                    // Database'den sepeti al
+                    var cart = await _cartService.GetByUserId(userId.Value);
+                    if (cart != null)
+                    {
+                        // Sepetteki ürünü bul ve sil
+                        var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == req.ProductId);
+                        if (cartItem != null)
+                        {
+                            _cartItemsService.TDelete(cartItem);
+                        }
+                    }
                 }
 
-                await SendOkAsync();
-            }
+                // Cookie işlemleri (hem login olan hem olmayan için)
+                var cookieCart = GetCartFromCookie();
+                var item = cookieCart.Find(i => i.productId == req.ProductId);
+                if (item != null)
+                {
+                    cookieCart.Remove(item);
+                    SaveCartToCookie(cookieCart);
+                }
 
-            private List<CartItemViewModel> GetCartFromCookie()
+                await SendAsync(new
+                {
+                    success = true,
+                    message = "Ürün sepetten kaldırıldı",
+                    cartItemCount = cookieCart.Count
+                }, 200, ct);
+            }
+            catch (Exception ex)
             {
-                var cart = _httpContextAccessor.HttpContext.Request.Cookies["cart"];
-                return string.IsNullOrEmpty(cart) ? new List<CartItemViewModel>() : JsonConvert.DeserializeObject<List<CartItemViewModel>>(cart);
+                await SendAsync(new
+                {
+                    success = false,
+                    message = "Ürün sepetten kaldırılırken bir hata oluştu"
+                }, 500, ct);
             }
+        }
 
-            private void SaveCartToCookie(List<CartItemViewModel> cart)
+        private List<CartItemViewModel> GetCartFromCookie()
+        {
+            var cart = _httpContextAccessor.HttpContext.Request.Cookies["cart"];
+            return string.IsNullOrEmpty(cart)
+                ? new List<CartItemViewModel>()
+                : JsonConvert.DeserializeObject<List<CartItemViewModel>>(cart);
+        }
+
+        private void SaveCartToCookie(List<CartItemViewModel> cart)
+        {
+            if (cart.Any())
             {
                 var cookieValue = JsonConvert.SerializeObject(cart);
-                _httpContextAccessor.HttpContext.Response.Cookies.Append("cart", cookieValue, new CookieOptions
-                {
-                    Path = "/",
-                    MaxAge = TimeSpan.FromDays(30) // Cookie süresi
-                });
+                _httpContextAccessor.HttpContext.Response.Cookies.Append("cart",
+                    cookieValue,
+                    new CookieOptions
+                    {
+                        Path = "/",
+                        HttpOnly = false,
+                        MaxAge = TimeSpan.FromDays(30),
+                        SameSite = SameSiteMode.Lax
+                    });
+            }
+            else
+            {
+                _httpContextAccessor.HttpContext.Response.Cookies.Delete("cart");
             }
         }
+    }
 
-        public class RemoveFromCartRequestViewModel
-        {
-            public int ProductId { get; set; }
-        }
+    public class RemoveFromCartRequestViewModel
+    {
+        public long ProductId { get; set; } // int yerine long kullanıyoruz
     }
 }

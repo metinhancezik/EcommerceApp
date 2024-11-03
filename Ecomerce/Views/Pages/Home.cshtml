@@ -10,73 +10,34 @@
             <div class="album py-5 bg-body-tertiary">
                 <div class="container">
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-                        <!-- Ürün 1 -->
-                        <div class="col">
-                            <div class="card shadow-sm">
-                                <img src="~/pictures/product1.jpg" class="card-img-top" width="100%" height="225" alt="Ürün 1">
-                                <div class="card-body">
-                                    <h5 class="card-title">Ürün 1</h5>
-                                    <p class="card-text">Bu ürün hakkında kısa bir açıklama. Özellikleri ve faydaları.</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">Detaylar</button>
+                        @foreach (var product in Model)
+                        {
+                            <div class="col">
+                                <div class="card shadow-sm">
+                                    <img src="~/pictures/product@(product.Id).jpg" class="card-img-top" width="100%" height="225" alt="@product.ProductName">
+                                    <div class="card-body">
+                                        <h5 class="card-title">@product.ProductName</h5>
+                                        <p class="card-text">@product.ProductDescription</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary">Detaylar</button>
+                                            </div>
+                                            <small class="text-muted">@product.UnitPrice.ToString("C")</small>
                                         </div>
-                                        <small class="text-muted">100 TL</small>
+                                        <button type="button" class="btn btn-primary mt-2 float-end"
+                                                onclick="addToCart(@product.Id, '@product.ProductName', @product.UnitPrice)">
+                                            Sepete Ekle
+                                        </button>
                                     </div>
-                                    <button type="button" class="btn btn-primary mt-2 float-end"
-                                            onclick="addToCart(1, 'Ürün 1', 100)">
-                                        Sepete Ekle
-                                    </button>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Ürün 2 -->
-                        <div class="col">
-                            <div class="card shadow-sm">
-                                <img src="~/pictures/product2.jpg" class="card-img-top" width="100%" height="225" alt="Ürün 2">
-                                <div class="card-body">
-                                    <h5 class="card-title">Ürün 2</h5>
-                                    <p class="card-text">İkinci ürünümüz hakkında bilgi. Neden bu ürünü tercih etmelisiniz?</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">Detaylar</button>
-                                        </div>
-                                        <small class="text-muted">150 TL</small>
-                                    </div>
-                                    <button type="button" class="btn btn-primary mt-2 float-end"
-                                            onclick="addToCart(2, 'Ürün 2', 150)">
-                                        Sepete Ekle
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ürün 3 -->
-                        <div class="col">
-                            <div class="card shadow-sm">
-                                <img src="~/pictures/product3.jpg" class="card-img-top" width="100%" height="225" alt="Ürün 3">
-                                <div class="card-body">
-                                    <h5 class="card-title">Ürün 3</h5>
-                                    <p class="card-text">Üçüncü ürünümüzün özellikleri ve kullanım alanları hakkında bilgi.</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">Detaylar</button>
-                                        </div>
-                                        <small class="text-muted">200 TL</small>
-                                    </div>
-                                    <button type="button" class="btn btn-primary mt-2 float-end"
-                                            onclick="addToCart(3, 'Ürün 3', 200)">
-                                        Sepete Ekle
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
-        
+
+        <!-- Sepet kısmı aynı kalacak -->
         <div class="col-md-3">
             <aside class="sidebar">
                 <h4>Sepetim</h4>
@@ -86,6 +47,8 @@
                 <button class="btn btn-primary mt-3" onclick="viewBasket()">Sepeti Görüntüle</button>
             </aside>
         </div>
+    </div>
+</div>
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>

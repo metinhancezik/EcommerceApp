@@ -9,6 +9,5 @@ namespace DataAccesLayer.Abstract
 {
     public interface ICartItems : IGenericDal<CartItems>
     {
-     
     }
 }

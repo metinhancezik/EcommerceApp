@@ -9,6 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface ICart : IGenericDal<Cart>
     {
-        
+        Task<Cart> GetByUserId(long userId);
     }
 }
