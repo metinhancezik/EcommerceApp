@@ -19,46 +19,175 @@ namespace lyzico3DPaymentProject.Controllers
         private ICountryService _countryService;
         private IAuthTokensService _authTokensService;
         private IProductsService _productsService;
-        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService, ICountryService countryService, IAuthTokensService authTokensService, IProductsService productsService)
+        private ICart _cartService;
+        private ICartItems _cartItemsService;
+        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService, ICountryService countryService, IAuthTokensService authTokensService, IProductsService productsService, ICart cartService, ICartItems cartItemsService )
         {
             _httpContextAccessor = httpContextAccessor;
             _userDetailService = userDetailService;
             _countryService = countryService;
             _authTokensService = authTokensService;
             _productsService = productsService;
+            _cartService = cartService;
+            _cartItemsService = cartItemsService;
         }
 
 
         [HttpGet]
-        public IActionResult Home()
+        public async Task<IActionResult> Home()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                var userToken = User.Claims.FirstOrDefault(c => c.Type == "token")?.Value;
+                if (!string.IsNullOrEmpty(userToken))
+                {
+                    var userId = await _authTokensService.GetUserIdFromTokenAsync(userToken);
+                    if (userId.HasValue)
+                    {
+                        var cartInfo = await _cartService.GetByUserId(userId.Value);
+                        if (cartInfo != null)
+                        {
+                            
+                            var cartItems = await _cartItemsService.GetCartItemsByCartId(cartInfo.Id);
+
+                            var cartItemDetails = new List<CartItemViewModel>();
+
+                            foreach (var item in cartItems)
+                            {
+                                var product = _productsService.GetProductByLongId(item.ProductId);
+                                if (product != null)
+                                {
+                                    cartItemDetails.Add(new CartItemViewModel
+                                    {
+                                        productId =item.Id,
+                                        productName = product.ProductName,
+                                        quantity = item.Quantity,
+                                        price = item.UnitPrice,
+                                        imageUrl = $"~/pictures/product{item.ProductId}.jpg"
+                                    });
+                                }
+                            }
+
+                            ViewBag.CartItems = cartItemDetails;
+                            ViewBag.CartItemsCount = cartItems.Count;
+                            ViewBag.CartTotalPrice = cartItems.Sum(x => x.TotalPrice);
+                        }
+                        else
+                        {
+                            ViewBag.CartItems = new List<CartItems>();
+                            ViewBag.CartTotalPrice = 0;
+                            ViewBag.CartItemsCount = 0;
+                        }
+                    }
+                }
+            }
+
             var products = _productsService.GetList();
+
             return View(products);
         }
+
         [HttpGet]
         public async Task<IActionResult> Basket()
         {
-            // FastEndpoint üzerinden sepet verilerini al
-            var cart = GetCartFromCookie();
-            var productViewModels = cart.Select(item => new ProductViewModel
+            List<ProductViewModel> productViewModels;
+
+            if (User.Identity.IsAuthenticated)
             {
-                Id = item.productId,
-                ProductName = item.productName,
-                UnitPrice = item.price,
-                Stock = item.quantity,
-                ImageUrl = $"~/pictures/product{item.productId}.jpg",
-                VendorName = "Satıcı"
-            }).ToList();
+                var userToken = User.Claims.FirstOrDefault(c => c.Type == "token")?.Value;
+                if (!string.IsNullOrEmpty(userToken))
+                {
+                    var userId = await _authTokensService.GetUserIdFromTokenAsync(userToken);
+                    if (userId.HasValue)
+                    {
+                        var cartInfo = await _cartService.GetByUserId(userId.Value);
+                        if (cartInfo != null)
+                        {
+                            var cartItems = await _cartItemsService.GetCartItemsByCartId(cartInfo.Id);
+                            productViewModels = new List<ProductViewModel>();
+
+                            foreach (var item in cartItems)
+                            {
+                                var product = _productsService.GetProductByLongId(item.ProductId);
+                                if (product != null)
+                                {
+                                    productViewModels.Add(new ProductViewModel
+                                    {
+                                        Id = item.ProductId,
+                                        ProductName = product.ProductName,
+                                        UnitPrice = item.UnitPrice,
+                                        Stock = item.Quantity,
+                                        ImageUrl = $"~/pictures/product{item.ProductId}.jpg",
+                                        VendorName = "Satıcı"
+                                    });
+                                }
+                            }
+
+                          
+                            ViewBag.CartItems = cartItems;
+                            ViewBag.CartItemsCount = cartItems.Count;
+                            ViewBag.CartTotalPrice = cartItems.Sum(x => x.TotalPrice);
+                        }
+                        else
+                        {
+                            productViewModels = new List<ProductViewModel>();
+                            ViewBag.CartItems = new List<CartItems>();
+                            ViewBag.CartTotalPrice = 0;
+                            ViewBag.CartItemsCount = 0;
+                        }
+                    }
+                    else
+                    {
+                        productViewModels = new List<ProductViewModel>();
+                    }
+                }
+                else
+                {
+                    productViewModels = new List<ProductViewModel>();
+                }
+            }
+            else
+            {
+                
+                var cart = GetCartFromCookie();
+                productViewModels = cart.Select(item => new ProductViewModel
+                {
+                    Id = item.productId,
+                    ProductName = item.productName,
+                    UnitPrice = item.price,
+                    Stock = item.quantity,
+                    ImageUrl = $"~/pictures/product{item.productId}.jpg",
+                    VendorName = "Satıcı"
+                }).ToList();
+
+              
+                ViewBag.CartItems = cart;
+                ViewBag.CartItemsCount = cart.Count;
+                ViewBag.CartTotalPrice = cart.Sum(x => x.price * x.quantity);
+            }
 
             return View(productViewModels);
         }
 
+  
         private List<CartItemViewModel> GetCartFromCookie()
         {
-            var cart = _httpContextAccessor.HttpContext.Request.Cookies["cart"];
-            return string.IsNullOrEmpty(cart) ? new List<CartItemViewModel>() : JsonConvert.DeserializeObject<List<CartItemViewModel>>(cart);
-        }
+            try
+            {
+                var cartCookie = _httpContextAccessor.HttpContext.Request.Cookies["cart"];
+                if (string.IsNullOrEmpty(cartCookie))
+                    return new List<CartItemViewModel>();
 
+                var cart = JsonConvert.DeserializeObject<List<CartItemViewModel>>(cartCookie);
+                return cart ?? new List<CartItemViewModel>();
+            }
+            catch (Exception ex)
+            {
+                
+                Console.WriteLine($"Cookie parsing error: {ex.Message}");
+                return new List<CartItemViewModel>();
+            }
+        }
 
         [HttpGet]
         public IActionResult ProductDetail()
@@ -82,7 +211,7 @@ namespace lyzico3DPaymentProject.Controllers
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    // Token yoksa, kullanıcıyı giriş sayfasına yönlendir
+                  
                     return RedirectToAction("Login");
                 }
 
@@ -94,7 +223,7 @@ namespace lyzico3DPaymentProject.Controllers
 
                     if (userDetails == null)
                     {
-                        // Kullanıcı bulunamadıysa, uygun bir hata mesajı döndür
+                       
                         ModelState.AddModelError("", "Kullanıcı bilgileri bulunamadı.");
                         return View(new AccountViewModel());
                     }
@@ -109,7 +238,7 @@ namespace lyzico3DPaymentProject.Controllers
                         Country = userDetails.Country?.CountryName
                     };
 
-                    // Kullanıcı bilgilerini oturumda sakla
+                    
                     _httpContextAccessor.HttpContext.Session.SetString("AccountInfo", JsonConvert.SerializeObject(accountModel));
 
                     return View(accountModel);
@@ -125,12 +254,12 @@ namespace lyzico3DPaymentProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Model geçerliyse, session'a kaydet
+              
                 _httpContextAccessor.HttpContext.Session.SetString("AccountInfo", JsonConvert.SerializeObject(model));
                 return RedirectToAction("Account");
             }
 
-            // Model geçerli değilse, hataları göster ve formu tekrar göster
+         
             return View("Account", model);
         }
 
@@ -145,15 +274,15 @@ namespace lyzico3DPaymentProject.Controllers
         {
             var countries = _countryService.GetList();
 
-            // Ülke listesini kontrol et
+      
             if (countries == null || !countries.Any())
             {
-                ViewBag.Countries = new SelectList(Enumerable.Empty<SelectListItem>()); // Boş bir liste oluştur
+                ViewBag.Countries = new SelectList(Enumerable.Empty<SelectListItem>()); 
                 Console.WriteLine("Ülke listesi boş veya null.");
             }
             else
             {
-                ViewBag.Countries = new SelectList(countries, "Id", "CountryName"); // Doğru alan adını kullanın
+                ViewBag.Countries = new SelectList(countries, "Id", "CountryName"); 
                 foreach (var country in countries)
                 {
                     Console.WriteLine($"Ülke ID: {country.Id}, Ülke Adı: {country.CountryName}");

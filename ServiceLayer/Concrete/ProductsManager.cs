@@ -1,5 +1,6 @@
 ﻿using DataAccesLayer.Abstract;
 using DataAccesLayer.Concrete;
+using DataAccesLayer.EntityFramework;
 using DataAccesLayer.Repositories;
 using EntityLayer.Concrete;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +47,11 @@ namespace ServiceLayer.Concrete
         public void TUpdate(Products t)
         {
             _products.Update(t);
+        }
+
+        public Products GetProductByLongId(long id)
+        {
+            return _products.GetProductByLongId(id);
         }
     }
 }

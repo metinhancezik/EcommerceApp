@@ -4,6 +4,7 @@ using ECommerceView.Models.Cart;
 using EntityLayer.Concrete;
 using FastEndpoints;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Newtonsoft.Json;
 using ServiceLayer.Abstract;
 
@@ -42,33 +43,32 @@ public class SyncCartToDatabaseEndpoint : Endpoint<SyncCartRequestModel>, ISyncC
         try
         {
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["auth_token"];
+            var token = req.Token;
+
             if (string.IsNullOrEmpty(token))
             {
                 await SendUnauthorizedAsync(ct);
                 return;
             }
 
-            // Token geçerliliğini kontrol et
+           
             if (!await _authService.ValidateTokenAsync(token))
             {
                 await SendUnauthorizedAsync(ct);
                 return;
             }
 
-            // UserId'yi al
+         
             var userId = await _authTokensService.GetUserIdFromTokenAsync(token);
             if (!userId.HasValue)
             {
-                await SendAsync(new
-                {
-                    success = false,
-                    message = "Kullanıcı bilgisi alınamadı"
-                }, 400, ct);
+            
+
+
                 return;
             }
 
-            // Kullanıcının aktif sepetini al veya oluştur
+           
             var cart = await _cartService.GetByUserId(userId.Value);
             if (cart == null)
             {
@@ -82,28 +82,28 @@ public class SyncCartToDatabaseEndpoint : Endpoint<SyncCartRequestModel>, ISyncC
                 };
                 _cartService.TAdd(cart);
             }
-            // Cookie'den sepeti al
-            var cartCookie = HttpContext.Request.Cookies["cart"];
+           
+            var cartCookie = _httpContextAccessor.HttpContext.Request.Cookies["cart"];
             if (!string.IsNullOrEmpty(cartCookie))
             {
                 var cookieItems = JsonConvert.DeserializeObject<List<CartItemViewModel>>(cartCookie);
                 foreach (var cookieItem in cookieItems)
                 {
-                    var product = _productService.GetById(cookieItem.productId);
+                    var product = _productService.GetProductByLongId(cookieItem.productId);  
                     if (product == null) continue;
-                    // Database'de bu ürün var mı kontrol et
+                    
                     var existingItem = cart.CartItems
                     .FirstOrDefault(ci => ci.ProductId == cookieItem.productId);
                     if (existingItem != null)
                     {
-                        // Varsa miktarı güncelle
+                       
                         existingItem.Quantity += cookieItem.quantity;
                         existingItem.TotalPrice = existingItem.UnitPrice*existingItem.Quantity;
                         _cartItemsService.TUpdate(existingItem);
                     }
                     else
                     {
-                        // Yoksa yeni ekle
+                      
                         var cartItem = new CartItems
                         {
                             CartId = cart.Id,
@@ -116,22 +116,29 @@ public class SyncCartToDatabaseEndpoint : Endpoint<SyncCartRequestModel>, ISyncC
                         _cartItemsService.TAdd(cartItem);
                     }
                 }
-                // Cookie'yi temizle
-                HttpContext.Response.Cookies.Delete("cart");
+                
+                _httpContextAccessor.HttpContext.Response.Cookies.Delete("cart");
             }
-            await SendAsync(new
-            {
-                success = true,
-                message = "Sepet başarıyla senkronize edildi",
-                cartId = cart.Id
-            }, 200, ct);
+            return;
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Detaylı hata: {ex.Message}");
+            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                Console.WriteLine($"Inner Exception Stack Trace: {ex.InnerException.StackTrace}");
+            }
+
             await SendAsync(new
             {
                 success = false,
-                message = "Sepet senkronizasyonu sırasında hata oluştu"
+                message = "Sepet senkronizasyonu sırasında hata oluştu",
+                error = ex.Message,
+                stackTrace = ex.StackTrace,
+                innerError = ex.InnerException?.Message
             }, 500, ct);
         }
     }

@@ -3,6 +3,7 @@
     public class SyncCartRequestModel
     {
         public List<CartCookieItemModel> CartItems { get; set; }
+        public string Token { get; set; }
 
         public SyncCartRequestModel()
         {

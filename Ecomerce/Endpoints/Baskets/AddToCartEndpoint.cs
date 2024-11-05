@@ -66,7 +66,7 @@ public class AddToCartEndpoint : Endpoint<CartItemViewModel>
                 var userId = await _authTokensService.GetUserIdFromTokenAsync(token);
                 if (userId.HasValue)
                 {
-                    // Database'den mevcut sepeti al veya yeni oluştur
+                    
                     var dbCart = await _cartService.GetByUserId(userId.Value);
                     if (dbCart == null)
                     {
@@ -80,11 +80,11 @@ public class AddToCartEndpoint : Endpoint<CartItemViewModel>
                         _cartService.TAdd(dbCart);
                     }
 
-                    // Ürün bilgilerini al
-                    var product = _productService.GetById(req.productId);
+                   
+                    var product = _productService.GetProductByLongId(req.productId);
                     if (product != null)
                     {
-                        // Sepette bu üründen var mı kontrol et
+                       
                         var existingItem = dbCart.CartItems
                             .FirstOrDefault(ci => ci.ProductId == req.productId);
 

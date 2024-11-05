@@ -6,6 +6,7 @@ using ECommerceView.Models.Cart;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -44,7 +45,7 @@ public class LoginEndpoint : Endpoint<LoginViewModel>
 
                 await HttpContext.SignInAsync(claimsPrincipal);
 
-                // Cookie'yi set et
+               
                 HttpContext.Response.Cookies.Append("auth_token", result.Token, new CookieOptions
                 {
                     HttpOnly = false,
@@ -52,8 +53,9 @@ public class LoginEndpoint : Endpoint<LoginViewModel>
                     SameSite = SameSiteMode.Strict
                 });
 
-                // Token'ı parametre olarak geçir
-                await SyncCart(result.Token);
+                
+                await SyncCart(result.Token, ct); 
+
 
                 await SendOkAsync(new
                 {
@@ -77,17 +79,16 @@ public class LoginEndpoint : Endpoint<LoginViewModel>
         }
     }
 
-    private async Task SyncCart(string token)
+    private async Task SyncCart(string token, CancellationToken ct)
     {
         try
         {
-            var syncRequest = new SyncCartRequestModel();
-
-            await _syncCartEndpoint.HandleAsync(syncRequest, new CancellationToken());
+            await _syncCartEndpoint.HandleAsync(new SyncCartRequestModel { Token = token }, ct);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Sepet senkronizasyonu hatası: {ex.Message}");
         }
     }
+
 }

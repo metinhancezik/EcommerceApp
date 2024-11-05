@@ -10,6 +10,6 @@ namespace ServiceLayer.Abstract
 {
     public interface IProductsService : IGenericService<Products>
     {
-        
+        Products GetProductByLongId(long id);
     }
 }

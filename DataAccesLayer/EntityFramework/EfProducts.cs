@@ -13,6 +13,11 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfProducts : GenericRepository<Products>, IProducts
     {
-        
+        public Products GetProductByLongId(long id)
+        {
+            using var context = new Context();
+
+            return context.Set<Products>().FirstOrDefault(u => u.Id == id);
+        }
     }
 }

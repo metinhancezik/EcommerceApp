@@ -9,5 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface ICartItems : IGenericDal<CartItems>
     {
+        Task<List<CartItems>> GetCartItemsByCartId(long cartId);
     }
 }

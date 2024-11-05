@@ -9,6 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface IProducts : IGenericDal<Products>
     {
-        
+        Products GetProductByLongId(long id);
     }
 }
