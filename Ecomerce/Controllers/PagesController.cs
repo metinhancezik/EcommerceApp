@@ -9,6 +9,8 @@ using DataAccesLayer.Abstract;
 using ECommerceView.Models.Cart;
 using ECommerceView.Models.Account;
 using ECommerceView.Models.Product;
+using ECommerceView.Models.Orders;
+
 
 namespace lyzico3DPaymentProject.Controllers
 {
@@ -21,7 +23,10 @@ namespace lyzico3DPaymentProject.Controllers
         private IProductsService _productsService;
         private ICart _cartService;
         private ICartItems _cartItemsService;
-        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService, ICountryService countryService, IAuthTokensService authTokensService, IProductsService productsService, ICart cartService, ICartItems cartItemsService )
+        private ICity _cityService;
+        public PagesController(IHttpContextAccessor httpContextAccessor, IUserDetailService userDetailService, 
+            ICountryService countryService, IAuthTokensService authTokensService, IProductsService productsService, 
+            ICart cartService, ICartItems cartItemsService, ICity cityService)
         {
             _httpContextAccessor = httpContextAccessor;
             _userDetailService = userDetailService;
@@ -30,6 +35,7 @@ namespace lyzico3DPaymentProject.Controllers
             _productsService = productsService;
             _cartService = cartService;
             _cartItemsService = cartItemsService;
+            _cityService= cityService;
         }
 
 
@@ -197,9 +203,81 @@ namespace lyzico3DPaymentProject.Controllers
         }
 
         [HttpGet]
-        public IActionResult Payment()
+        public async Task<IActionResult> Payment()
         {
+            decimal totalAmount = 0;
+            int itemCount = 0;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userToken = User.Claims.FirstOrDefault(c => c.Type == "token")?.Value;
+                if (!string.IsNullOrEmpty(userToken))
+                {
+                    var userId = await _authTokensService.GetUserIdFromTokenAsync(userToken);
+                    if (userId.HasValue)
+                    {
+                        var cartInfo = await _cartService.GetByUserId(userId.Value);
+                        if (cartInfo != null)
+                        {
+                            var cartItems = await _cartItemsService.GetCartItemsByCartId(cartInfo.Id);
+                            totalAmount = cartItems.Sum(x => x.TotalPrice);
+                            itemCount = cartItems.Count;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var cart = GetCartFromCookie();
+                totalAmount = cart.Sum(x => x.price * x.quantity);
+                itemCount = cart.Count;
+            }
+
+            ViewBag.TotalAmount = totalAmount;
+            ViewBag.ItemCount = itemCount;
+
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PersonalInfo()
+        {
+            var model = new PersonalInfoViewModel();
+
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userToken = User.Claims.FirstOrDefault(c => c.Type == "token")?.Value;
+                if (!string.IsNullOrEmpty(userToken))
+                {
+                    var userId = await _authTokensService.GetUserIdFromTokenAsync(userToken);
+                    if (userId.HasValue)
+                    {
+
+                      
+                        var userInfo = _userDetailService.GetUserByLongId(userId.Value);
+
+                        var cities = _cityService.GetCitiesByCountryId(userInfo.CountryId);
+
+                        if (userInfo != null)
+                        {
+                            model.Name = userInfo.UserName;
+                            model.Surname = userInfo.UserSurname;
+                            model.Phone = userInfo.UserPhone;
+
+                       
+                            model.Cities = _cityService.GetCitiesByCountryId(userInfo.CountryId)
+                            .Select(city => new SelectListItem
+                            {
+                                Value = city.Id.ToString(),
+                                Text = city.CityName
+                            }).ToList();
+                        }
+                    }
+                }
+            }
+
+            return View(model);
         }
 
         [HttpGet]
@@ -258,8 +336,6 @@ namespace lyzico3DPaymentProject.Controllers
                 _httpContextAccessor.HttpContext.Session.SetString("AccountInfo", JsonConvert.SerializeObject(model));
                 return RedirectToAction("Account");
             }
-
-         
             return View("Account", model);
         }
 

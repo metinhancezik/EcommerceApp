@@ -34,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Endpoints\Products\" />
     <Folder Include="wwwroot\pictures\" />
   </ItemGroup>
 

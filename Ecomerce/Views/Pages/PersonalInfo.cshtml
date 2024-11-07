@@ -1,0 +1,222 @@
+﻿@using ECommerceView.Models.Orders
+@model PersonalInfoViewModel
+@{
+    ViewData["Title"] = "Kişisel Bilgiler";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Teslimat Bilgileri</h4>
+                </div>
+                <div class="card-body">
+                    <form id="orderForm">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Ad</label>
+                                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Adınız" })
+                                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Soyad</label>
+                                    @Html.TextBoxFor(m => m.Surname, new { @class = "form-control", placeholder = "Soyadınız" })
+                                    @Html.ValidationMessageFor(m => m.Surname, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Telefon</label>
+                                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "5XX XXX XX XX" })
+                                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">TC Kimlik No</label>
+                                    @Html.TextBoxFor(m => m.IdentityNumber, new { @class = "form-control", placeholder = "XXXXXXXXXXX" })
+                                    @Html.ValidationMessageFor(m => m.IdentityNumber, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">İl</label>
+                                    @Html.DropDownListFor(m => m.CityId, Model.Cities, "İl Seçiniz", new { @class = "form-select" })
+                                    @Html.ValidationMessageFor(m => m.CityId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">İlçe</label>
+                                    @Html.DropDownListFor(m => m.DistrictId, Model.Districts ?? new List<SelectListItem>(), "İlçe Seçiniz", new { @class = "form-select" })
+                                    @Html.ValidationMessageFor(m => m.DistrictId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">Mahalle</label>
+                                    @Html.DropDownListFor(m => m.NeighborhoodId, Model.Neighborhoods ?? new List<SelectListItem>(), "Mahalle Seçiniz", new { @class = "form-select" })
+                                    @Html.ValidationMessageFor(m => m.NeighborhoodId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Açık Adres</label>
+                                @Html.TextAreaFor(m => m.Address, new { @class = "form-control", rows = "3", placeholder = "Sokak, Apartman No, Daire No vb." })
+                                @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-arrow-right me-2"></i>Ödemeye Geç
+                            </button>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Form submit işlemi
+            $('#orderForm').on('submit', function (e) {
+                e.preventDefault();
+
+                
+                var formData = {
+                    name: $('#Name').val(),
+                    surname: $('#Surname').val(),
+                    phone: $('#Phone').val().replace(/\s/g, ''), // Boşlukları temizle
+                    identityNumber: $('#IdentityNumber').val(),
+                    address: $('#Address').val(),
+                    cityId: parseInt($('#CityId').val()),
+                    districtId: parseInt($('#DistrictId').val()),
+                    neighborhoodId: parseInt($('#NeighborhoodId').val())
+                };
+
+                // Form validasyonu
+                if (!formData.name || !formData.surname || !formData.phone ||
+                    !formData.identityNumber || !formData.address ||
+                    !formData.cityId || !formData.districtId || !formData.neighborhoodId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Uyarı',
+                        text: 'Lütfen tüm alanları doldurunuz.'
+                    });
+                    return;
+                }
+
+                // API isteği
+                $.ajax({
+                    url: '/api/orders/save-information',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    beforeSend: function () {
+                        // Loading durumu
+                        $('button[type="submit"]').prop('disabled', true)
+                            .html('<span class="spinner-border spinner-border-sm me-2"></span>İşleniyor...');
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            
+                            window.location.href = '/Pages/Payment';
+                        } else {
+                            
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata',
+                                text: response.message || 'Bilgiler kaydedilirken bir hata oluştu.'
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        // API hatası
+                        var response = xhr.responseJSON;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: response?.message || 'Bir hata oluştu. Lütfen tekrar deneyiniz.'
+                        });
+                    },
+                    complete: function () {
+                        // Loading durumunu kaldır
+                        $('button[type="submit"]').prop('disabled', false)
+                            .html('Ödemeye Geç<i class="fas fa-arrow-right ms-2"></i>');
+                    }
+                });
+            });
+
+            
+            $('#CityId').change(function () {
+                var cityId = $(this).val();
+                if (cityId) {
+                    $.get(`/api/locations/districts/${cityId}`, function (data) {
+                        var districtSelect = $('#DistrictId');
+                        districtSelect.empty();
+                        districtSelect.append('<option value="">İlçe Seçiniz</option>');
+                        $('#NeighborhoodId').empty().append('<option value="">Mahalle Seçiniz</option>');
+
+                        $.each(data, function (index, item) {
+                            districtSelect.append($('<option></option>')
+                                .val(item.value)
+                                .text(item.text));
+                        });
+                    });
+                }
+            });
+
+           
+            $('#DistrictId').change(function () {
+                var districtId = $(this).val();
+                if (districtId) {
+                    $.get(`/api/locations/neighborhoods/${districtId}`, function (data) {
+                        var neighborhoodSelect = $('#NeighborhoodId');
+                        neighborhoodSelect.empty();
+                        neighborhoodSelect.append('<option value="">Mahalle Seçiniz</option>');
+
+                        $.each(data, function (index, item) {
+                            neighborhoodSelect.append($('<option></option>')
+                                .val(item.value)
+                                .text(item.text));
+                        });
+                    });
+                }
+            });
+
+            
+            $('#Phone').on('input', function () {
+                var phone = $(this).val().replace(/\D/g, '');
+                if (phone.length > 0) {
+                    phone = phone.match(/(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+                    $(this).val(!phone[2] ? phone[1] : phone[1] + ' ' + phone[2] +
+                        (phone[3] ? ' ' + phone[3] : '') + (phone[4] ? ' ' + phone[4] : ''));
+                }
+            });
+
+            
+            $('#IdentityNumber').on('input', function () {
+                $(this).val($(this).val().replace(/\D/g, '').substring(0, 11));
+            });
+        });
+    </script>
+}

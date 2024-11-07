@@ -14,6 +14,12 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfCity : GenericRepository<City>, ICity
     {
-       
+        public List<City> GetCitiesByCountryId(int countryId)
+        {
+            using var context = new Context();
+            return context.Set<City>()
+                .Where(c => c.CountryId == countryId)
+                .ToList();
+        }
     }
 }

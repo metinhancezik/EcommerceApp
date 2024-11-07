@@ -9,6 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface ICity: IGenericDal<City>
     {
-       
+        List<City> GetCitiesByCountryId(int countryId);
     }
 }

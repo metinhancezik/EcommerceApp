@@ -10,6 +10,6 @@ namespace ServiceLayer.Abstract
 {
     public interface ICityService: IGenericService<City>
     {
-       
+        List<City> GetCitiesByCountryId(int countryId);
     }
 }

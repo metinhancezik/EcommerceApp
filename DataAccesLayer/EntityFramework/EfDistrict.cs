@@ -13,6 +13,12 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfDistrict : GenericRepository<District>, IDistrict
     {
-     
+        public List<District> GetDistrictsByCityId(int cityId)
+        {
+            using var context = new Context();
+            return context.Set<District>()
+                .Where(c => c.CityId == cityId)
+                .ToList();
+        }
     }
 }

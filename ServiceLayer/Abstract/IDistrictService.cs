@@ -10,6 +10,6 @@ namespace ServiceLayer.Abstract
 {
     public interface IDistrictService: IGenericService<District>
     {
-     
+        List<District> GetDistrictsByCityId(int id);
     }
 }

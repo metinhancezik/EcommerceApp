@@ -26,6 +26,11 @@ namespace ServiceLayer.Concrete
             return _district.GetByID(id);
         }
 
+        public List<District> GetDistrictsByCityId(int id)
+        {
+            return _district.GetDistrictsByCityId(id);
+        }
+
         public List<District> GetList()
         {
             return _district.GetListAll();

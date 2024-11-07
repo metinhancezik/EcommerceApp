@@ -27,6 +27,11 @@ namespace ServiceLayer.Concrete
             return _city.GetByID(id);
         }
 
+        public List<City> GetCitiesByCountryId(int countryId)
+        {
+            return _city.GetCitiesByCountryId(countryId);
+        }
+
         public List<City> GetList()
         {
             return _city.GetListAll();
