@@ -82,6 +82,12 @@
                             </div>
                         </div>
 
+                        <div class="mb-3" hidden>
+                            <div class="form-group">
+                                <input type="hidden" name="CountryId" value="@ViewBag.Country" /> 
+                        </div>
+                    </div>
+
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-arrow-right me-2"></i>Ödemeye Geç
@@ -110,7 +116,8 @@
                     address: $('#Address').val(),
                     cityId: parseInt($('#CityId').val()),
                     districtId: parseInt($('#DistrictId').val()),
-                    neighborhoodId: parseInt($('#NeighborhoodId').val())
+                    neighborhoodId: parseInt($('#NeighborhoodId').val()),
+                    countryId: parseInt($('input[name="CountryId"]').val())
                 };
 
                 // Form validasyonu

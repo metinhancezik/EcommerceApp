@@ -258,7 +258,7 @@ namespace lyzico3DPaymentProject.Controllers
                         var userInfo = _userDetailService.GetUserByLongId(userId.Value);
 
                         var cities = _cityService.GetCitiesByCountryId(userInfo.CountryId);
-
+                        ViewBag.Country= userInfo.CountryId;
                         if (userInfo != null)
                         {
                             model.Name = userInfo.UserName;

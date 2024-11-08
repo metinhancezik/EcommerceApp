@@ -9,6 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface IOrderInformations : IGenericDal<OrderInformations>
     {
-        
+        Task<OrderInformations> GetLastOrderByUserId(long id);
     }
 }

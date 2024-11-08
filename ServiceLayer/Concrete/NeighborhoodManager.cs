@@ -31,6 +31,11 @@ namespace ServiceLayer.Concrete
             return _neighborhood.GetListAll();
         }
 
+        public List<Neighborhood> GetNeighborhoodsByDistrictId(int id)
+        {
+            return _neighborhood.GetNeighborhoodsByDistrictId(id);
+        }
+
         public void TAdd(Neighborhood t)
         {
             _neighborhood.Insert(t);

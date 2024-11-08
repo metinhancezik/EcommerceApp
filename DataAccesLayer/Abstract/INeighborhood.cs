@@ -9,6 +9,6 @@ namespace DataAccesLayer.Abstract
 {
     public interface INeighborhood : IGenericDal<Neighborhood>
     {
-       
+        List<Neighborhood> GetNeighborhoodsByDistrictId(int id);
     }
 }

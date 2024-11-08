@@ -26,6 +26,11 @@ namespace ServiceLayer.Concrete
             return _orderInformations.GetByID(id);
         }
 
+        public Task<OrderInformations> GetLastOrderByUserId(long id)
+        {
+            return _orderInformations.GetLastOrderByUserId(id);
+        }
+
         public List<OrderInformations> GetList()
         {
             return _orderInformations.GetListAll();

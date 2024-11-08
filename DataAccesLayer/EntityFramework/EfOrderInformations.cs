@@ -2,6 +2,7 @@
 using DataAccesLayer.Concrete;
 using DataAccesLayer.Repositories;
 using EntityLayer.Concrete;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,13 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfOrderInformations : GenericRepository<OrderInformations>, IOrderInformations
     {
-        
+        public async Task<OrderInformations> GetLastOrderByUserId(long userId)
+        {
+            using var context = new Context();
+            return await context.OrderInformations
+                .Where(o => o.UserId == userId) // UserId ile filtreleme
+                .OrderByDescending(o => o.CreatedTime) 
+                .FirstOrDefaultAsync();
+        }
     }
 }

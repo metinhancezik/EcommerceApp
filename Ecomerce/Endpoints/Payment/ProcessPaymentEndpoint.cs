@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Iyzico3DPayment.Shared.Models;
 using ECommerceView.Models.Payment;
 using ECommerceView.Models.Account;
+using ServiceLayer.Abstract;
 
 namespace ECommerceView.Endpoints.Payment;
 
@@ -16,13 +17,21 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
     private readonly ILogger<ProcessPaymentEndpoint> _logger;
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly IAuthTokensService _authTokenService;
+    private readonly IProductsService _productService;
+    private readonly IOrderInformationsService _orderInformationsService;
 
-    public ProcessPaymentEndpoint(ILogger<ProcessPaymentEndpoint> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public ProcessPaymentEndpoint(ILogger<ProcessPaymentEndpoint> logger, 
+        IHttpClientFactory httpClientFactory, IConfiguration configuration, IAuthTokensService authTokensService,
+        IProductsService productService, IOrderInformationsService orderInformationsService)
     {
         _logger = logger;
         _httpClient = httpClientFactory.CreateClient();
         _configuration = configuration;
         _httpClient.BaseAddress = new Uri(_configuration["ApiSettings:BaseUrl"]);
+        _authTokenService = authTokensService;
+        _productService = productService;
+        _orderInformationsService = orderInformationsService;
     }
 
     public override void Configure()
@@ -34,11 +43,12 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
     {
         try
         {
-            _logger.LogInformation("Ödeme işlemi başlatıldı: {PaymentDetails}", req);
+            _logger.LogInformation("Ödeme işlemi başlatıldı: {@PaymentDetails}", req); // Structured logging için @ eklendi
 
-            var accountInfo = GetAccountInfo();
+            var accountInfo = await GetAccountInfo();
             if (accountInfo == null)
             {
+                _logger.LogWarning("Kullanıcı bilgileri bulunamadı"); // Log eklendi
                 await SendAsync(new PaymentResponse { Status = "error", ErrorMessage = "Kullanıcı bilgileri bulunamadı." }, 400, ct);
                 return;
             }
@@ -46,18 +56,19 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
             var requestModel = CreatePaymentRequestModel(req, accountInfo);
             var paymentResponse = await SendPaymentRequest(requestModel);
 
-            if (paymentResponse != null)
+            if (paymentResponse?.Status == "success") 
             {
                 await SendAsync(paymentResponse, 200, ct);
             }
             else
             {
-                await SendAsync(new PaymentResponse { Status = "error", ErrorMessage = "Ödeme işlemi başarısız oldu." }, 400, ct);
+                var errorMessage = paymentResponse?.ErrorMessage ?? "Ödeme işlemi başarısız oldu.";
+                await SendAsync(new PaymentResponse { Status = "error", ErrorMessage = errorMessage }, 400, ct);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ödeme işlemi sırasında bir hata oluştu");
+            _logger.LogError(ex, "Ödeme işlemi sırasında bir hata oluştu: {ErrorMessage}", ex.Message);
             await SendAsync(new PaymentResponse
             {
                 Status = "error",
@@ -65,8 +76,6 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
             }, 500, ct);
         }
     }
-
-
     private PaymentRequestModel CreatePaymentRequestModel(PaymentViewModel paymentViewModel, AccountViewModel accountInfo)
     {
         return new PaymentRequestModel
@@ -140,9 +149,48 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
         }
     }
 
-    private AccountViewModel GetAccountInfo()
+    private async Task<AccountViewModel> GetAccountInfo()
     {
-        var accountInfoJson = HttpContext.Session.GetString("AccountInfo");
-        return string.IsNullOrEmpty(accountInfoJson) ? null : JsonConvert.DeserializeObject<AccountViewModel>(accountInfoJson);
+        try
+        {
+            var token = User.Claims.FirstOrDefault(c => c.Type == "token")?.Value;
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("Token bulunamadı");
+                return null;
+            }
+
+            var userId = await _authTokenService.GetUserIdFromTokenAsync(token);
+            if (!userId.HasValue)
+            {
+                _logger.LogWarning("UserId bulunamadı");
+                return null;
+            }
+
+            var orderInfo = await _orderInformationsService.GetLastOrderByUserId(userId.Value);
+            if (orderInfo == null)
+            {
+                _logger.LogWarning("Sipariş bilgileri bulunamadı");
+                return null;
+            }
+
+            return new AccountViewModel
+            {
+                Name = orderInfo.Name,
+                Surname = orderInfo.Surname,
+                GsmNumber = orderInfo.Phone,
+                Email = User.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? "",
+                IdentityNumber = orderInfo.IdentityNumber,
+                RegistrationAddress = orderInfo.Address,
+                City = orderInfo.City?.CityName ?? "",
+                Country = orderInfo.Country?.CountryName ?? "Türkiye",
+                ZipCode = "34000"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Kullanıcı bilgileri alınırken hata oluştu");
+            return null;
+        }
     }
 }

@@ -10,6 +10,6 @@ namespace ServiceLayer.Abstract
 {
     public interface IOrderInformationsService : IGenericService<OrderInformations>
     {
-        
+        Task<OrderInformations> GetLastOrderByUserId(long id);
     }
 }

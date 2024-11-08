@@ -54,13 +54,16 @@ namespace ECommerceView.Endpoints.Orders
                     Phone = req.Phone,
                     IdentityNumber = req.IdentityNumber,
                     Address = req.Address,
+                    CountryId = req.CountryId,
                     CityId = req.CityId,
                     DistrictId = req.DistrictId,
                     NeighborhoodId = req.NeighborhoodId,
                     CreatedTime = DateTime.Now
                 };
 
-                     _orderInformationService.TAdd(orderInfo); 
+      
+
+                _orderInformationService.TAdd(orderInfo); 
            
                     await HttpContext.Response.WriteAsJsonAsync(new
                     {
