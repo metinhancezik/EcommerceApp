@@ -13,6 +13,7 @@ namespace Iyzico3DPayment.Shared.Models
         public string Category1 { get; set; }
         public string Category2 { get; set; } 
         public string ItemType { get; set; }
+        public string Quantity { get; set; }
         public decimal Price { get; set; }
     }
 }

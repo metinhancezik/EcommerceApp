@@ -7,6 +7,6 @@
         public string ExpireMonth { get; set; }
         public string ExpireYear { get; set; }
         public string Cvc { get; set; }
-        public string Price { get; set; }
+        public decimal Price { get; set; }
     }
 }

@@ -12,8 +12,7 @@
             <div class="modal-header p-4">
                 <h1 class="modal-title fs-5">Ödeme Modülü</h1>
             </div>
-            @using (Html.BeginForm(FormMethod.Post, new { id = "paymentForm", action = "/payment/process" }))
-            {
+              <form id="paymentForm" method="post">
                 <div class="modal-body py-0 p-4">
                     <div class="odeme-formu p-4">
                         @Html.AntiForgeryToken()
@@ -22,7 +21,7 @@
                             <label class="form-label">Sepet Tutarı</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" value="@totalAmount.ToString("N2") ₺" readonly />
-                                @Html.HiddenFor(m => m.Price, new { Value = totalAmount })
+                                <input type="hidden" name="Price" id="Price" value="@totalAmount" />
                             </div>
                         </div>
 
@@ -59,12 +58,13 @@
                         @totalAmount.ToString("N2") ₺ Öde
                     </button>
                 </div>
-            }
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function () {
             // Kart numarası formatı
@@ -103,25 +103,44 @@
             // Form gönderimi
             $('#paymentForm').on('submit', function (e) {
                 e.preventDefault();
+                debugger;
 
                 // Form verilerini al
                 var formData = {
-                    cardHolderName: $('#CardHolderName').val(),
-                    cardNumber: $('#CardNumber').val().replace(/\s/g, ''),
-                    expireMonth: $('#ExpireMonth').val(),
-                    expireYear: $('#ExpireYear').val(),
-                    cvc: $('#Cvc').val(),
-                    price: $('#Price').val()
+                    Price: parseFloat($('#Price').val()),
+                    CardHolderName: $('#CardHolderName').val(),
+                    CardNumber: $('#CardNumber').val().replace(/\s/g, ''),
+                    ExpireMonth: $('#ExpireMonth').val(),
+                    ExpireYear: $('#ExpireYear').val(),
+                    Cvc: $('#Cvc').val()
                 };
 
+                console.log('Gönderilecek veri:', formData); // Debug için log
+                var token = $('input[name="__RequestVerificationToken"]').val();
                 // API isteği
                 $.ajax({
                     url: '/payment/process',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(formData),
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    beforeSend: function () {
+                        // İstek öncesi loading göster
+                        Swal.fire({
+                            title: 'İşleminiz yapılıyor...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    },
                     success: function (response) {
-                        if (response.success) {
+                        Swal.close();
+                        console.log('API Yanıtı:', response); // Debug için log
+
+                        if (response.status === "success") {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Başarılı!',
@@ -134,11 +153,18 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Hata!',
-                                text: response.message || 'Ödeme işlemi başarısız.'
+                                text: response.errorMessage || 'Ödeme işlemi başarısız.'
                             });
                         }
                     },
-                    error: function () {
+                    error: function (xhr, status, error) {
+                        Swal.close();
+                        console.error('Hata detayı:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+
                         Swal.fire({
                             icon: 'error',
                             title: 'Hata!',

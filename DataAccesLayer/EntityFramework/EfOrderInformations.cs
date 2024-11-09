@@ -17,10 +17,15 @@ namespace DataAccesLayer.EntityFramework
         public async Task<OrderInformations> GetLastOrderByUserId(long userId)
         {
             using var context = new Context();
+
             return await context.OrderInformations
-                .Where(o => o.UserId == userId) // UserId ile filtreleme
-                .OrderByDescending(o => o.CreatedTime) 
-                .FirstOrDefaultAsync();
+         .Include(o => o.Country)
+         .Include(o => o.City)
+         .Include(o => o.District)
+         .Include(o => o.Neighborhood)
+         .Where(o => o.UserId == userId)
+         .OrderByDescending(o => o.CreatedTime)
+         .FirstOrDefaultAsync();
         }
     }
 }

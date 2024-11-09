@@ -37,7 +37,8 @@ public class LoginEndpoint : Endpoint<LoginViewModel>
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, req.Email),
-                    new Claim("token", result.Token)
+                    new Claim("token", result.Token),
+                    new Claim("email", req.Email),
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, "login");
