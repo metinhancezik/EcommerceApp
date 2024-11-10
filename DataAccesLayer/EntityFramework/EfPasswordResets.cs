@@ -11,8 +11,7 @@ using System.Threading.Tasks;
 
 namespace DataAccesLayer.EntityFramework
 {
-    public class EfPasswordResets : GenericRepository<PasswordResets>, IPasswordResets { 
-
-
+    public class EfPasswordResets : GenericRepository<PasswordResets>, IPasswordResets
+    {
     }
 }

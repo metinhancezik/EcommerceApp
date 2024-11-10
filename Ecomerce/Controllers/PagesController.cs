@@ -119,7 +119,8 @@ namespace lyzico3DPaymentProject.Controllers
                                 {
                                     productViewModels.Add(new ProductViewModel
                                     {
-                                        Id = item.ProductId,
+                                        Id = item.Id,
+                                        ProductId = item.ProductId,
                                         ProductName = product.ProductName,
                                         UnitPrice = item.UnitPrice,
                                         Stock = item.Quantity,
@@ -275,9 +276,12 @@ namespace lyzico3DPaymentProject.Controllers
                         }
                     }
                 }
+                return View(model);
             }
-
-            return View(model);
+            else
+            {
+                return RedirectToAction("Login");
+            }     
         }
 
         [HttpGet]

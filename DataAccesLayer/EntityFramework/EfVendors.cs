@@ -13,6 +13,6 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfVendors : GenericRepository<Vendors>, IVendors
     {
-        
+  
     }
 }

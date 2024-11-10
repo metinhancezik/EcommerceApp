@@ -2,6 +2,7 @@
 using DataAccesLayer.Concrete;
 using DataAccesLayer.Repositories;
 using EntityLayer.Concrete;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,5 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfOrderState : GenericRepository<OrderState>, IOrderState
     {
-        
     }
 }

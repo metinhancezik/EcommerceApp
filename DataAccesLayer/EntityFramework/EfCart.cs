@@ -18,7 +18,7 @@ namespace DataAccesLayer.EntityFramework
         {
             using var context = new Context();
             return await context.Carts
-                .Include(c => c.CartItems) 
+                .Include(c => c.CartItems)
                 .FirstOrDefaultAsync(c => c.UserId == userId && c.IsActive);
         }
     }

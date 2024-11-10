@@ -13,11 +13,12 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfUserAuth : GenericRepository<UserAuth>, IUserAuth
     {
+    
         public UserAuth GetByUserID(long id)
-        {
-            using var c = new Context();
+        {    
+            using var context = new Context();
 
-            return c.Set<UserAuth>().FirstOrDefault(u => u.UserId == id);
+            return context.Set<UserAuth>().FirstOrDefault(u => u.UserId == id);
         }
     }
 }

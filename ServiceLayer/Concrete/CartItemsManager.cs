@@ -21,6 +21,17 @@ namespace ServiceLayer.Concrete
         {
             _cartItems = cartItems;
         }
+
+        public Task DeleteCartItems(List<CartItems> cartItems)
+        {
+            return _cartItems.DeleteCartItems(cartItems);
+        }
+
+        public Task<List<CartItems>> GetByCartAndProductIds(long cartId, List<long> productIds)
+        {
+            return _cartItems.GetByCartAndProductIds(cartId, productIds);
+        }
+
         public CartItems GetById(int id)
         {
             return _cartItems.GetByID(id);
@@ -34,6 +45,11 @@ namespace ServiceLayer.Concrete
         public List<CartItems> GetList()
         {
             return _cartItems.GetListAll();
+        }
+
+        public Task<CartItems> GetSingleCartItem(long cartId, long productId)
+        {
+           return _cartItems.GetSingleCartItem(cartId, productId);
         }
 
         public void TAdd(CartItems t)

@@ -2,6 +2,7 @@
 using DataAccesLayer.Concrete;
 using DataAccesLayer.Repositories;
 using EntityLayer.Concrete;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace DataAccesLayer.EntityFramework
         {
             using var context = new Context();
             return context.Set<Neighborhood>()
-                .Where(c => c.DistrictId == districtId)
+                .Where(n => n.DistrictId == districtId)
                 .ToList();
         }
     }

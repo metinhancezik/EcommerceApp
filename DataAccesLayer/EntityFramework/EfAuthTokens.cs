@@ -17,12 +17,10 @@ namespace DataAccesLayer.EntityFramework
         public async Task<long?> GetUserIdFromTokenAsync(string token)
         {
             using var context = new Context();
+            var authToken = await context.Set<AuthTokens>()
+                .FirstOrDefaultAsync(u => u.AccessToken == token);
 
-        
-            var authToken = await context.Set<AuthTokens>().FirstOrDefaultAsync(u => u.AccessToken == token);
-
-           
-            return authToken?.UserId; 
+            return authToken?.UserId;
         }
     }
 }

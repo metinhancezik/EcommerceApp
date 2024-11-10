@@ -5,8 +5,9 @@
     using ECommerceView.Models.Cart;
     using Newtonsoft.Json;
     using ServiceLayer.Abstract;
+    using ECommerceView.Endpoints.Interfaces;
 
-    public class RemoveFromCartEndpoint : Endpoint<RemoveFromCartRequestViewModel>
+    public class RemoveFromCartEndpoint : Endpoint<RemoveFromCartRequestViewModel>, IRemoveFromCartEndpoint
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ICartService _cartService;
@@ -36,7 +37,7 @@
             try
             {
                 // Token kontrolü
-                var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var token = HttpContext.Request.Cookies["auth_token"];
                 var userId = await _authTokensService.GetUserIdFromTokenAsync(token);
 
                 if (userId.HasValue) // Kullanıcı login olmuşsa
@@ -46,7 +47,7 @@
                     if (cart != null)
                     {
                         // Sepetteki ürünü bul ve sil
-                        var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == req.ProductId);
+                        var cartItem = cart.CartItems.FirstOrDefault(ci => ci.Id == req.ProductId);
                         if (cartItem != null)
                         {
                             _cartItemsService.TDelete(cartItem);

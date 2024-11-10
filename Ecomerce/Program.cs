@@ -12,11 +12,13 @@ using AuthenticationLayer.Middleware;
 using AuthenticationLayer.Extensions;
 using ServiceLayer.Container;
 using ECommerceView.Endpoints.Interfaces;
+using ECommerceView.Endpoints.Baskets;
+using ECommerceView.Endpoints.Orders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Servisleri ekleyin
-builder.Services.ContainerDependencies();
+builder.Services.ContainerDependencies(builder.Configuration);
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddAuthenticationServices();
 builder.Services.AddAuthenticationServices();
@@ -27,6 +29,8 @@ builder.Services.AddAuthentication("login")
         options.LogoutPath = "/api/logout"; // Çýkýþ yolu
     });
 builder.Services.AddScoped<ISyncCartToDatabaseEndpoint, SyncCartToDatabaseEndpoint>();
+builder.Services.AddScoped<ICompleteOrderEndpoint, CompleteOrderEndpoint>();
+builder.Services.AddScoped<IRemoveFromCartEndpoint, RemoveFromCartEndpoint>();
 // FastEndpoints'i ekleyin
 builder.Services.AddFastEndpoints();
 

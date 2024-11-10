@@ -17,7 +17,6 @@ namespace DataAccesLayer.EntityFramework
         public async Task<OrderInformations> GetLastOrderByUserId(long userId)
         {
             using var context = new Context();
-
             return await context.OrderInformations
          .Include(o => o.Country)
          .Include(o => o.City)

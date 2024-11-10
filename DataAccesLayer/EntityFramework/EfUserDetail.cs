@@ -13,18 +13,19 @@ namespace DataAccesLayer.EntityFramework
 {
     public class EfUserDetail : GenericRepository<UserDetails>, IUserDetail
     {
+       
         public UserDetails GetUserByLongId(long id)
         {
-            using var context=new Context();
+            using var context = new Context();
 
             return context.Set<UserDetails>().FirstOrDefault(u => u.Id == id);
         }
 
         public UserDetails GetUserByMail(string email)
         {
+
             using var context = new Context();
 
-            
             var userDetails = context.Set<UserDetails>().FirstOrDefault(ud => ud.UserMail == email);
 
             if (userDetails == null)

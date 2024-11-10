@@ -1,6 +1,9 @@
 ﻿using DataAccesLayer.Abstract;
+using DataAccesLayer.Concrete;
 using DataAccesLayer.EntityFramework;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceLayer.Abstract;
 using ServiceLayer.Concrete;
@@ -19,8 +22,9 @@ namespace ServiceLayer.Container
     {
 
 
-        public static void ContainerDependencies(this IServiceCollection services)
+        public static void ContainerDependencies(this IServiceCollection services, IConfiguration configuration)
         {
+  
             services.AddScoped<IUserDetailService, UserDetailManager>();
             services.AddScoped<IUserDetail, EfUserDetail>();
 

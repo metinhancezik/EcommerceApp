@@ -9,6 +9,12 @@ using Iyzico3DPayment.Shared.Models;
 using ECommerceView.Models.Payment;
 using ECommerceView.Models.Account;
 using ServiceLayer.Abstract;
+using ECommerceView.Models.Cart;
+using EntityLayer.Concrete;
+using Iyzipay.Model;
+using DataAccesLayer.Abstract;
+using ECommerceView.Models.Orders;
+using ECommerceView.Endpoints.Interfaces;
 
 namespace ECommerceView.Endpoints.Payment;
 
@@ -22,10 +28,11 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
     private readonly IOrderInformationsService _orderInformationsService;
     private readonly ICartService _cartService;
     private readonly ICartItemsService _cartItemsService;
+    private readonly ICompleteOrderEndpoint _completeOrderEndpoint;
     public ProcessPaymentEndpoint(ILogger<ProcessPaymentEndpoint> logger, 
         IHttpClientFactory httpClientFactory, IConfiguration configuration, IAuthTokensService authTokensService,
         IProductsService productService, IOrderInformationsService orderInformationsService, 
-        ICartService cartService,ICartItemsService cartItemsService)
+        ICartService cartService,ICartItemsService cartItemsService, ICompleteOrderEndpoint completeOrderEndpoint)
     {
         _logger = logger;
         _httpClient = httpClientFactory.CreateClient();
@@ -36,6 +43,7 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
         _orderInformationsService = orderInformationsService;
         _cartService = cartService;
         _cartItemsService = cartItemsService;
+        _completeOrderEndpoint = completeOrderEndpoint;
     }
 
     public override void Configure()
@@ -157,19 +165,79 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadAsStringAsync();
-            _logger.LogInformation($"API Raw Response: {result}");
+            _logger.LogInformation($"Ödeme API Yanıtı: {result}");
             try
             {
+                var token = User.Claims.FirstOrDefault(c => c.Type == "token")?.Value;
+                var userId = await _authTokenService.GetUserIdFromTokenAsync(token);
+
+                if (userId.HasValue)
+                {
+                    var cart = await _cartService.GetByUserId(userId.Value);
+                    var cartItems = await _cartItemsService.GetCartItemsByCartId(cart.Id);
+                    var orderInfo = await _orderInformationsService.GetLastOrderByUserId(userId.Value);
+                    // CompleteOrder endpoint'ine istek için request modeli oluştur
+                    var completeOrderRequest = new CompleteOrderRequest
+                    {
+                        UserId = userId.Value,
+                        BuyerName = requestModel.Buyer.Name,
+                        BuyerSurname = requestModel.Buyer.Surname,
+                        BuyerPhone = requestModel.Buyer.GsmNumber,
+                        BuyerAddress = requestModel.Buyer.RegistrationAddress,
+                        BuyerIdentityNumber = requestModel.Buyer.IdentityNumber,   
+                        CityId= orderInfo.CityId,
+                        NeighborhoodId= orderInfo.NeighborhoodId,
+                        DistrictId= orderInfo.DistrictId,
+                        CountryId= orderInfo.CountryId,
+                        
+                        Items = cartItems.Select(item => new OrderItems
+                        {
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity,
+                            UnitPrice = item.UnitPrice,
+                            TotalPrice = item.TotalPrice,
+                            VendorId = item.VendorId
+                        }).ToList()
+                    };
+
+                    try
+                    {
+                        
+                        await _completeOrderEndpoint.HandleAsync(completeOrderRequest, default);
+
+                        _logger.LogInformation($"Sipariş başarıyla tamamlandı. UserId: {userId}");
+                        return new PaymentResponse
+                        {
+                            Status = "success",
+                            ErrorMessage = null
+                        };
+                    }
+                    catch (Exception orderEx)
+                    {
+                        _logger.LogError(orderEx, "Sipariş tamamlama işlemi başarısız oldu");
+                        return new PaymentResponse
+                        {
+                            Status = "error",
+                            ErrorMessage = "Ödeme başarılı ancak sipariş tamamlanamadı"
+                        };
+                    }
+                }
+
+                _logger.LogWarning("Kullanıcı bilgileri alınamadı");
                 return new PaymentResponse
                 {
-                    Status = "success",
-                    ErrorMessage = null
+                    Status = "error",
+                    ErrorMessage = "Kullanıcı bilgileri alınamadı"
                 };
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, $"JSON Deserialization hatası. Raw content: {result}");
-                return new PaymentResponse { Status = "error", ErrorMessage = "API yanıtı işlenemedi." };
+                _logger.LogError(ex, "Sipariş tamamlama sırasında hata oluştu");
+                return new PaymentResponse
+                {
+                    Status = "error",
+                    ErrorMessage = "İşlem sırasında bir hata oluştu"
+                };
             }
         }
         else
@@ -223,4 +291,5 @@ public class ProcessPaymentEndpoint : Endpoint<PaymentViewModel, PaymentResponse
             return null;
         }
     }
+    
 }

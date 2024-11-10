@@ -109,18 +109,17 @@ namespace DataAccesLayer.Concrete
             modelBuilder.Entity<OrderStatus>(entity =>
             {
                 entity.HasKey(e => e.Id);
+
                 entity.HasOne(os => os.OrderInformation)
                     .WithMany(oi => oi.OrderStatuses)
                     .HasForeignKey(os => os.OrderInformationId)
                     .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasOne(os => os.State)
                     .WithMany(s => s.OrderStatuses)
                     .HasForeignKey(os => os.StateId)
                     .OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(os => os.Vendor)
-                    .WithMany(v => v.OrderStatuses)
-                    .HasForeignKey(os => os.VendorId)
-                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasQueryFilter(os => os.OrderInformation.User.IsActive);
             });
 

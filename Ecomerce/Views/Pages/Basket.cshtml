@@ -5,7 +5,6 @@
     ViewData["Title"] = "Sepetim";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
 <div class="container mt-4">
     <div class="row">
         <!-- Sol taraf - Sepetteki Ürünler -->
@@ -23,7 +22,7 @@
                 <div class="row row-cols-1 row-cols-md-2 g-4">
                     @foreach (var product in Model)
                     {
-                        <div class="col">
+                        <div class="col" data-product-container="@product.ProductId">
                             <div class="card h-100 shadow-sm">
                                 <img src="@product.ImageUrl" class="card-img-top" alt="@product.ProductName"
                                      style="height: 200px; object-fit: cover;" />
@@ -31,31 +30,34 @@
                                     <h5 class="card-title">@product.ProductName</h5>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="text-muted">Birim Fiyat:</span>
-                                        <strong>@product.UnitPrice.ToString("C")</strong>
+                                        <strong data-unit-price="@product.ProductId">@product.UnitPrice.ToString("C")</strong>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="text-muted">Adet:</span>
                                         <div class="input-group" style="width: 120px;">
                                             <button class="btn btn-outline-secondary" type="button"
-                                                    onclick="updateQuantity(@product.Id, -1)">
+                                                    onclick="updateQuantity(@product.ProductId, -1)">
                                                 -
                                             </button>
                                             <input type="text" class="form-control text-center"
-                                                   value="@product.Stock" readonly>
+                                                   value="@product.Stock" readonly
+                                                   data-product-id="@product.ProductId">
                                             <button class="btn btn-outline-secondary" type="button"
-                                                    onclick="updateQuantity(@product.Id, 1)">
+                                                    onclick="updateQuantity(@product.ProductId, 1)">
                                                 +
                                             </button>
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="text-muted">Toplam:</span>
-                                        <strong>@((product.UnitPrice * product.Stock).ToString("C"))</strong>
+                                        <strong data-product-total="@product.ProductId">
+                                            @((product.UnitPrice * product.Stock).ToString("C"))
+                                        </strong>
                                     </div>
                                 </div>
                                 <div class="card-footer bg-transparent">
                                     <button class="btn btn-outline-danger w-100"
-                                            onclick="removeFromCart(@product.Id)">
+                                            onclick="removeFromCart(@product.ProductId)">
                                         <i class="fas fa-trash-alt"></i> Kaldır
                                     </button>
                                 </div>
@@ -75,11 +77,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>Toplam Ürün:</span>
-                        <strong>@ViewBag.CartItemsCount</strong>
+                        <strong id="cart-total-items">@ViewBag.CartItemsCount</strong>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Toplam Tutar:</span>
-                        <strong>@ViewBag.CartTotalPrice.ToString("C")</strong>
+                        <strong id="cart-total-price">@ViewBag.CartTotalPrice.ToString("C")</strong>
                     </div>
                     <button class="btn btn-primary w-100" onclick="confirmOrder()">
                         Siparişi Onayla
@@ -92,6 +94,173 @@
 
 @section Scripts {
     <script>
+       
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!@Json.Serialize(User.Identity.IsAuthenticated)) {
+                renderCartItems(); // Cookie tabanlı sepeti göster
+            }
+        });
+
+        function renderCartItems() {
+            const cart = getCartFromCookie();
+            updateCartUI(cart);
+        }
+
+        function updateCartUI(cart) {
+            const container = document.querySelector('.row.row-cols-1.row-cols-md-2.g-4');
+            if (!container) return;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-warning text-center" role="alert">
+                                    Sepetiniz boş.
+                                </div>
+                            </div>`;
+                return;
+            }
+
+            let totalPrice = 0;
+            let totalItems = 0;
+
+            container.innerHTML = cart.map(item => {
+                const itemTotal = item.price * item.quantity;
+                totalPrice += itemTotal;
+                totalItems += item.quantity;
+
+                return `
+                            <div class="col">
+                                <div class="card h-100 shadow-sm">
+                                    <img src="/pictures/product${item.productId}.jpg" class="card-img-top" alt="${item.productName}"
+                                         style="height: 200px; object-fit: cover;" />
+                                    <div class="card-body">
+                                        <h5 class="card-title">${item.productName}</h5>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted">Birim Fiyat:</span>
+                                            <strong>${item.price.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted">Adet:</span>
+                                            <div class="input-group" style="width: 120px;">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                        onclick="updateQuantity(${item.productId}, -1)">
+                                                    -
+                                                </button>
+                                                <input type="text" class="form-control text-center"
+                                                       value="${item.quantity}" readonly>
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                        onclick="updateQuantity(${item.productId}, 1)">
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted">Toplam:</span>
+                                            <strong>${itemTotal.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <button class="btn btn-outline-danger w-100"
+                                                onclick="removeFromCart(${item.productId})">
+                                            <i class="fas fa-trash-alt"></i> Kaldır
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>`;
+            }).join('');
+
+            
+            updateOrderSummary(totalItems, totalPrice);
+        }
+        function updateOrderSummary() {
+            const summaryBody = document.querySelector('.col-md-3 .card .card-body');
+            if (summaryBody) {
+               
+                let totalItems = 0;
+                document.querySelectorAll('input[type="text"]').forEach(input => {
+                    totalItems += parseInt(input.value || 0);
+                });
+
+                // Toplam tutarı hesapla
+                let totalPrice = 0;
+                document.querySelectorAll('[data-product-total]').forEach(el => {
+                    const price = parseFloat(el.textContent
+                        .replace('₺', '')      
+                        .replace(/\./g, '')   
+                        .replace(',', '.')     
+                    );
+                    totalPrice += price;
+                });
+
+                
+                const formattedPrice = new Intl.NumberFormat('tr-TR', {
+                    style: 'currency',
+                    currency: 'TRY',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(totalPrice);
+
+                summaryBody.innerHTML = `
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Toplam Ürün:</span>
+                        <strong>${totalItems}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Toplam Tutar:</span>
+                        <strong>${formattedPrice}</strong>
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="confirmOrder()">
+                        Siparişi Onayla
+                    </button>`;
+            }
+        }
+
+        function removeFromCart(productId) {
+            if (@Json.Serialize(User.Identity.IsAuthenticated)) {
+                $.ajax({
+                    url: '/api/cart/remove',
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ productId: productId }),
+                    success: function () {
+                        window.location.reload();
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON?.message || 'Ürün silinirken bir hata oluştu.';
+                        alert(errorMessage);
+                    }
+                });
+            } else {
+                const cart = getCartFromCookie();
+                const index = cart.findIndex(i => i.productId === productId);
+                if (index > -1) {
+                    cart.splice(index, 1);
+                    document.cookie = `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/`;
+                    updateCartUI(cart); 
+                }
+            }
+        }
+
+        function updateOrderSummary(totalItems, totalPrice) {
+        
+            const summaryBody = document.querySelector('.col-md-3 .card .card-body');
+            if (summaryBody) {
+                summaryBody.innerHTML = `
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Toplam Ürün:</span>
+                        <strong>${totalItems}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Toplam Tutar:</span>
+                        <strong>${totalPrice.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</strong>
+                    </div>
+                    ${totalItems > 0 ? `
+                        <button class="btn btn-primary w-100" onclick="confirmOrder()">
+                            Siparişi Onayla
+                        </button>
+                    ` : ''}`;
+            }
+        }
         function updateQuantity(productId, change) {
             if (@Json.Serialize(User.Identity.IsAuthenticated)) {
                 $.ajax({
@@ -102,8 +271,51 @@
                         productId: productId,
                         change: change
                     }),
-                    success: function () {
-                        window.location.reload();
+                    success: function (response) {
+                        if (response.success) {
+                            // Eğer ürün sepetten kaldırıldıysa
+                            if (response.newQuantity === 0) {
+                                window.location.reload();
+                                return;
+                            }
+
+                            // Ürün miktarını güncelle
+                            const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
+                            if (quantityInput) {
+                                quantityInput.value = response.newQuantity;
+                            }
+
+                            // Ürün toplam fiyatını güncelle
+                            const totalElement = document.querySelector(`[data-product-total="${productId}"]`);
+                            if (totalElement) {
+                                totalElement.textContent = response.newTotal.toLocaleString('tr-TR', {
+                                    style: 'currency',
+                                    currency: 'TRY'
+                                });
+                            }
+
+                            // Sepet özetini güncelle
+                            let totalItems = 0;
+                            let totalPrice = 0;
+
+                            document.querySelectorAll('input[data-product-id]').forEach(input => {
+                                totalItems += parseInt(input.value);
+                            });
+
+                            document.querySelectorAll('[data-product-total]').forEach(el => {
+                                const price = parseFloat(el.textContent.replace(/[^0-9.-]+/g, ''));
+                                totalPrice += price;
+                            });
+
+                            updateOrderSummary(totalItems, totalPrice);
+
+                            // Mini sepeti güncelle (eğer varsa)
+                            if (typeof renderCart === 'function' && document.getElementById('cartItems')) {
+                                renderCart();
+                            }
+                        } else {
+                            alert(response.message);
+                        }
                     },
                     error: function (xhr) {
                         const errorMessage = xhr.responseJSON?.message || 'Miktar güncellenirken bir hata oluştu.';
@@ -111,14 +323,57 @@
                     }
                 });
             } else {
+                // Cookie tabanlı sepet işlemleri
                 const cart = getCartFromCookie();
                 const item = cart.find(i => i.productId === productId);
                 if (item) {
-                    item.quantity = Math.max(1, item.quantity + change);
+                    const newQuantity = item.quantity + change;
+                    if (newQuantity < 1) {
+                        removeFromCart(productId);
+                        return;
+                    }
+
+                    const maxQuantity = 10;
+                    if (newQuantity > maxQuantity) {
+                        alert(`En fazla ${maxQuantity} adet ürün ekleyebilirsiniz.`);
+                        return;
+                    }
+
+                    item.quantity = newQuantity;
                     document.cookie = `cart=${encodeURIComponent(JSON.stringify(cart))}; path=/`;
-                    window.location.reload();
+
+                    // Mini sepeti güncelle
+                    if (typeof renderCart === 'function') {
+                        renderCart();
+                    }
+
+                    // Sepet sayfasını güncelle
+                    updateCartUI(cart);
                 }
             }
+        }
+        function updateProductQuantityUI(productId, quantity) {
+            const quantityInput = document.querySelector(`input[data-product-id="${productId}"]`);
+            if (quantityInput) {
+                quantityInput.value = quantity;
+            }
+
+            
+            const cart = getCartFromCookie();
+            const item = cart.find(i => i.productId === productId);
+            if (item) {
+                const totalPriceElement = document.querySelector(`[data-product-total="${productId}"]`);
+                if (totalPriceElement) {
+                    const total = item.price * quantity;
+                    totalPriceElement.textContent = total.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                }
+            }
+        }
+        function getCartFromCookie() {
+            const cart = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('cart='))?.split('=')[1];
+            return cart ? JSON.parse(decodeURIComponent(cart)) : [];
         }
 
         function confirmOrder() {

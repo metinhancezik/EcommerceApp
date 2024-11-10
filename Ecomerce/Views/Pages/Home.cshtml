@@ -256,61 +256,64 @@
                 .find(row => row.startsWith('cart='))?.split('=')[1];
             return cart ? JSON.parse(decodeURIComponent(cart)) : [];
         }
-                function renderCart() {
-                    // Sadece giriş yapmamış kullanıcılar için cookie-based sepeti göster
-                    if (!@Json.Serialize(User.Identity.IsAuthenticated)) {
-                        const cart = getCartFromCookie();
-                        const cartItems = document.getElementById('cartItems');
-                        cartItems.innerHTML = '';
 
-                        if (cart.length === 0) {
-                            cartItems.innerHTML = '<li class="list-group-item text-center">Sepetiniz boş</li>';
-                            return;
-                        }
+        function renderCart() {
+            // Sadece giriş yapmamış kullanıcılar için cookie-based sepeti göster
+            if (!@Json.Serialize(User.Identity.IsAuthenticated)) {
+                const cart = getCartFromCookie();
+                const cartItems = document.getElementById('cartItems');
+                cartItems.innerHTML = '';
 
-                        let total = 0;
-                        let itemCount = 0;
-
-                        cart.forEach(item => {
-                            const itemTotal = item.price * item.quantity;
-                            total += itemTotal;
-                            itemCount += item.quantity;
-
-                            const li = document.createElement('li');
-                            li.className = 'list-group-item';
-                            li.innerHTML = `
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-0">${item.productName}</h6>
-                                        <small class="text-muted">
-                                            ${item.quantity} adet x ${item.price.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
-                                        </small>
-                                    </div>
-                                    <div class="text-end">
-                                        <div>${itemTotal.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-                                        <button class="btn btn-sm btn-danger mt-1" onclick="removeFromCart(${item.productId})">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                            cartItems.appendChild(li);
-                        });
-
-                        if (cart.length > 0) {
-                            const totalLi = document.createElement('li');
-                            totalLi.className = 'list-group-item bg-light';
-                            totalLi.innerHTML = `
-                                <div class="d-flex justify-content-between">
-                                    <strong>Toplam:</strong>
-                                    <strong>${total.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</strong>
-                                </div>
-                                <small class="text-muted">Toplam ${itemCount} ürün</small>
-                            `;
-                            cartItems.appendChild(totalLi);
-                        }
-                    }
+                if (cart.length === 0) {
+                    cartItems.innerHTML = '<li class="list-group-item text-center">Sepetiniz boş</li>';
+                    return;
                 }
+
+                let total = 0;
+                let itemCount = 0;
+
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    itemCount += item.quantity;
+
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    // onclick fonksiyonunda parantez kapatma hatası düzeltildi
+                    li.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">${item.productName}</h6>
+                                <small class="text-muted">
+                                    ${item.quantity} adet x ${item.price.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div>${itemTotal.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+                                <button class="btn btn-sm btn-danger mt-1" onclick="removeFromCart(${item.productId})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    cartItems.appendChild(li);
+                });
+
+               
+                if (cart.length > 0) {
+                    const totalLi = document.createElement('li');
+                    totalLi.className = 'list-group-item bg-light';
+                    totalLi.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <strong>Toplam:</strong>
+                            <strong>${total.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</strong>
+                        </div>
+                        <small class="text-muted">Toplam ${itemCount} ürün</small>
+                    `;
+                    cartItems.appendChild(totalLi);
+                }
+            }
+        }
         function addToCart(productId, productName, price) {
             if (@Json.Serialize(User.Identity.IsAuthenticated)) {
                 // Giriş yapmış kullanıcılar için API çağrısı

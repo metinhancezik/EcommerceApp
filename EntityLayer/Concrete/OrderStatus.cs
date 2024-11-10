@@ -12,11 +12,10 @@ namespace EntityLayer.Concrete
         public long OrderInformationId { get; set; }
         public bool PaymentStatus { get; set; }
         public long StateId { get; set; }
-        public long VendorId { get; set; }
         public DateTime UpdatedTime { get; set; }
 
         public OrderInformations OrderInformation { get; set; }
         public OrderState State { get; set; }
-        public Vendors Vendor { get; set; }
+     
     }
 }
