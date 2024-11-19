@@ -20,5 +20,6 @@ namespace EntityLayer.Concrete
         public ICollection<OrderItems> OrderItems { get; set; }
         public ICollection<CartItems> CartItems { get; set; }
         public ICollection<Products> Products { get; set; }
+        public ICollection<UserDetails> Users { get; set; }
     }
 }
