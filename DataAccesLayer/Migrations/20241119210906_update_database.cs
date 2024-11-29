@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccesLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class databaseEntegration : Migration
+    public partial class update_database : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,6 +36,21 @@ namespace DataAccesLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OrderStates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Roles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -77,32 +92,6 @@ namespace DataAccesLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserDetails",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserSurname = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserMail = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CountryId = table.Column<int>(type: "int", nullable: false),
-                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserDetails", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserDetails_Countries_CountryId",
-                        column: x => x.CountryId,
-                        principalTable: "Countries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -121,6 +110,46 @@ namespace DataAccesLayer.Migrations
                     table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Products_Vendors_VendorId",
+                        column: x => x.VendorId,
+                        principalTable: "Vendors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserDetails",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UserSurname = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UserPhone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    UserMail = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CountryId = table.Column<int>(type: "int", nullable: false),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    VendorId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserDetails_Countries_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserDetails_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserDetails_Vendors_VendorId",
                         column: x => x.VendorId,
                         principalTable: "Vendors",
                         principalColumn: "Id",
@@ -470,8 +499,8 @@ namespace DataAccesLayer.Migrations
                     OrderInformationId = table.Column<long>(type: "bigint", nullable: false),
                     PaymentStatus = table.Column<bool>(type: "bit", nullable: false),
                     StateId = table.Column<long>(type: "bigint", nullable: false),
-                    VendorId = table.Column<long>(type: "bigint", nullable: false),
-                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    VendorsId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -489,11 +518,10 @@ namespace DataAccesLayer.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_OrderStatuses_Vendors_VendorId",
-                        column: x => x.VendorId,
+                        name: "FK_OrderStatuses_Vendors_VendorsId",
+                        column: x => x.VendorsId,
                         principalTable: "Vendors",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -637,9 +665,9 @@ namespace DataAccesLayer.Migrations
                 column: "StateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderStatuses_VendorId",
+                name: "IX_OrderStatuses_VendorsId",
                 table: "OrderStatuses",
-                column: "VendorId");
+                column: "VendorsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PasswordResets_UserId",
@@ -661,6 +689,16 @@ namespace DataAccesLayer.Migrations
                 name: "IX_UserDetails_CountryId",
                 table: "UserDetails",
                 column: "CountryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserDetails_RoleId",
+                table: "UserDetails",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserDetails_VendorId",
+                table: "UserDetails",
+                column: "VendorId");
         }
 
         /// <inheritdoc />
@@ -700,9 +738,6 @@ namespace DataAccesLayer.Migrations
                 name: "OrderStates");
 
             migrationBuilder.DropTable(
-                name: "Vendors");
-
-            migrationBuilder.DropTable(
                 name: "Neighborhoods");
 
             migrationBuilder.DropTable(
@@ -710,6 +745,12 @@ namespace DataAccesLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "Districts");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
+
+            migrationBuilder.DropTable(
+                name: "Vendors");
 
             migrationBuilder.DropTable(
                 name: "Cities");

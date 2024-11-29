@@ -9,7 +9,7 @@ namespace DataAccesLayer.Concrete
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=ECommerceDB;Trusted_Connection=True;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer("Server=DESKTOP-PHVEME4\\MSI;Database=ECommerceDB;Trusted_Connection=True;TrustServerCertificate=True;");
             }
         }
 
@@ -30,6 +30,7 @@ namespace DataAccesLayer.Concrete
         public DbSet<City> Cities { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<Neighborhood> Neighborhoods { get; set; }
+        public DbSet<Roles> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,12 +38,51 @@ namespace DataAccesLayer.Concrete
 
             modelBuilder.Entity<UserDetails>(entity =>
             {
+                // Primary Key
                 entity.HasKey(e => e.Id);
+
+                // Country ilişkisi
                 entity.HasOne(u => u.Country)
                     .WithMany(c => c.UserDetails)
                     .HasForeignKey(u => u.CountryId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                // Role ilişkisi
+                entity.HasOne(u => u.Role)
+                    .WithMany(r => r.Users)
+                    .HasForeignKey(u => u.RoleId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Vendor ilişkisi (nullable)
+                entity.HasOne(u => u.Vendor)
+                    .WithMany(v => v.Users)
+                    .HasForeignKey(u => u.VendorId)
+                    .IsRequired(false)  // VendorId nullable olduğu için
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Soft delete için global filter
                 entity.HasQueryFilter(u => u.IsActive);
+
+                // Opsiyonel: Alan kısıtlamaları
+                entity.Property(u => u.UserName).HasMaxLength(50).IsRequired();
+                entity.Property(u => u.UserSurname).HasMaxLength(50).IsRequired();
+                entity.Property(u => u.UserMail).HasMaxLength(100).IsRequired();
+                entity.Property(u => u.UserPhone).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<Roles>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(r => r.RoleName)
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(r => r.Description)
+                    .HasMaxLength(200);
+
+                // Soft delete için global filter
+                entity.HasQueryFilter(r => r.IsActive);
             });
 
             modelBuilder.Entity<UserAuth>(entity =>

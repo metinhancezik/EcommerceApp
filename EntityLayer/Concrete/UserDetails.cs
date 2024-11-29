@@ -1,6 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Diagnostics.Metrics;
+using System.Numerics;
 
 namespace EntityLayer.Concrete
 {
@@ -15,6 +18,15 @@ namespace EntityLayer.Concrete
         public DateTime CreatedTime { get; set; }
         public DateTime UpdatedTime { get; set; }
         public bool IsActive { get; set; }
+        public int RoleId { get; set; }
+        public long? VendorId { get; set; }
+
+        [ForeignKey("VendorId")]
+        public Vendors Vendor { get; set; }
+
+        [ForeignKey("RoleId")]
+        public Roles Role { get; set; }
         public Country Country { get; set; }
+
     }
 }

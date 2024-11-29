@@ -488,6 +488,32 @@ namespace DataAccesLayer.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("EntityLayer.Concrete.Roles", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+                });
+
             modelBuilder.Entity("EntityLayer.Concrete.UserAuth", b =>
                 {
                     b.Property<long>("Id")
@@ -546,28 +572,42 @@ namespace DataAccesLayer.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserMail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UserPhone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("UserSurname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long?>("VendorId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CountryId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("VendorId");
 
                     b.ToTable("UserDetails");
                 });
@@ -874,7 +914,22 @@ namespace DataAccesLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EntityLayer.Concrete.Roles", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EntityLayer.Concrete.Vendors", "Vendor")
+                        .WithMany("Users")
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Country");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("Vendor");
                 });
 
             modelBuilder.Entity("EntityLayer.Concrete.Cart", b =>
@@ -933,6 +988,11 @@ namespace DataAccesLayer.Migrations
                     b.Navigation("OrderItems");
                 });
 
+            modelBuilder.Entity("EntityLayer.Concrete.Roles", b =>
+                {
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("EntityLayer.Concrete.Vendors", b =>
                 {
                     b.Navigation("CartItems");
@@ -942,6 +1002,8 @@ namespace DataAccesLayer.Migrations
                     b.Navigation("OrderStatuses");
 
                     b.Navigation("Products");
+
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }
